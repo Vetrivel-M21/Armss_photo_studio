@@ -1,0 +1,17 @@
+.env
+/backend/bin/
+/tmp/
+*.log
+/backend/data/
+
+# Node
+web/node_modules/
+web/dist/
+web/.vite/
+
+# Go
+*.test
+
+# OS
+.DS_Store
+Thumbs.db

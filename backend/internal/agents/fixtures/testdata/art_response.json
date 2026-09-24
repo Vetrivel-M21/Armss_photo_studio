@@ -1,0 +1,28 @@
+{
+  "content": [
+    {
+      "type": "tool_use",
+      "id": "toolu_art_01",
+      "name": "emit_art_direction",
+      "input": {
+        "layout": "Centered hero illustration, headline banner across lower third, clean top-left corner",
+        "focalPoint": "A row of lit diyas forming a rising staircase, center frame",
+        "typography": "Bold condensed sans headline, light serif subhead beneath",
+        "colour": "Navy ground with warm saffron diya glow and cream highlights",
+        "textToRender": ["Light the Way Forward", "Wishing you a Diwali filled with new beginnings", "From all of us at ARMSS"],
+        "fullPosterPrompt": "A warm, photoreal Diwali poster: a row of glowing diyas forming a rising staircase against a deep navy dusk sky, saffron glow, cream highlights. Keep the top-left corner and the full bottom band completely clean, uncluttered, and free of any text or graphic marks — those areas are reserved for elements added later. Render the headline 'Light the Way Forward' in a bold condensed sans across the lower-middle third only.",
+        "backgroundPrompt": "A warm, photoreal Diwali poster background: a row of glowing diyas forming a rising staircase against a deep navy dusk sky, saffron glow, cream highlights, no text anywhere. Keep the top-left corner and the full bottom band completely clean and uncluttered.",
+        "negativePrompt": "logo, brand marks, wordmark, watermark, text in the top band, clutter, extra figures",
+        "aspectRatio": "4:5",
+        "reservedZones": [
+          { "id": "logo", "x": 0.03, "y": 0.03, "w": 0.22, "h": 0.09, "fill": "#16265A", "note": "space reserved for brand lockup" },
+          { "id": "tagline", "x": 0.03, "y": 0.82, "w": 0.5, "h": 0.06, "fill": "#16265A", "note": "space reserved for tagline lockup" },
+          { "id": "footer", "x": 0.0, "y": 0.9, "w": 1.0, "h": 0.1, "fill": "#16265A", "note": "space reserved for contact footer bar" }
+        ],
+        "compositeSteps": ["overlay footer bar", "overlay tagline lockup", "overlay logo with drop shadow"]
+      }
+    }
+  ],
+  "stop_reason": "tool_use",
+  "usage": { "input_tokens": 720, "output_tokens": 410 }
+}

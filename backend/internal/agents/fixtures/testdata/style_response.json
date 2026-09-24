@@ -1,0 +1,27 @@
+{
+  "content": [
+    {
+      "type": "tool_use",
+      "id": "toolu_style_01",
+      "name": "emit_style_profile",
+      "input": {
+        "summary": "Warm festival poster style with bold navy and saffron blocks, photoreal composited product shots, generous white space around a top-band reserved for the brand lockup.",
+        "palette": [
+          { "hex": "#16265A", "role": "primary" },
+          { "hex": "#F5A623", "role": "accent" },
+          { "hex": "#FFF8EE", "role": "background" }
+        ],
+        "typography": "Bold condensed sans headline over a light serif subhead",
+        "layoutPatterns": "Centered hero image with headline banner across the lower third",
+        "imagery": "Photoreal composited product and people shots, warm festival lighting",
+        "finish": "photoreal composite",
+        "tone": "celebratory, warm, professional",
+        "logoTreatment": "Top-left corner, white knockout on navy plate",
+        "fixedElements": ["navy footer bar", "saffron corner flourish"],
+        "consistency": "High — every past poster reuses the same footer bar and corner flourish"
+      }
+    }
+  ],
+  "stop_reason": "tool_use",
+  "usage": { "input_tokens": 512, "output_tokens": 240 }
+}

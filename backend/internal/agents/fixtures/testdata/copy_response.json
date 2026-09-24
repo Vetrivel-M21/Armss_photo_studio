@@ -1,0 +1,18 @@
+{
+  "content": [
+    {
+      "type": "tool_use",
+      "id": "toolu_copy_01",
+      "name": "emit_copy",
+      "input": {
+        "headline": "Light the Way Forward",
+        "subhead": "Wishing you a Diwali filled with new beginnings",
+        "cta": "From all of us at ARMSS",
+        "valueWords": ["LIGHT", "PROSPERITY", "TOGETHER"],
+        "alternates": ["Every Lamp, A New Beginning", "Bright Diwali, Brighter Careers"]
+      }
+    }
+  ],
+  "stop_reason": "tool_use",
+  "usage": { "input_tokens": 290, "output_tokens": 140 }
+}

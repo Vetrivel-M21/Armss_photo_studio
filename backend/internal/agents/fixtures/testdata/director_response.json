@@ -1,0 +1,36 @@
+{
+  "content": [
+    {
+      "type": "tool_use",
+      "id": "toolu_director_01",
+      "name": "emit_concepts",
+      "input": {
+        "concepts": [
+          {
+            "name": "Lamps of Opportunity",
+            "bigIdea": "Diyas doubling as tiny beacons lighting a path forward for careers",
+            "visualMetaphor": "A row of lit diyas forming a rising staircase",
+            "mood": "hopeful, warm",
+            "palette": "navy ground, saffron diya glow"
+          },
+          {
+            "name": "Prosperity in Motion",
+            "bigIdea": "Rangoli patterns that resolve into a subtle upward arrow",
+            "visualMetaphor": "Rangoli petals arranged as a growth chart",
+            "mood": "energetic, optimistic",
+            "palette": "cream ground, red and saffron rangoli"
+          },
+          {
+            "name": "Together We Rise",
+            "bigIdea": "A community of silhouettes sharing one large diya's light",
+            "visualMetaphor": "Silhouetted figures gathered around a giant central diya",
+            "mood": "communal, sincere",
+            "palette": "navy dusk sky, warm diya glow"
+          }
+        ]
+      }
+    }
+  ],
+  "stop_reason": "tool_use",
+  "usage": { "input_tokens": 610, "output_tokens": 320 }
+}

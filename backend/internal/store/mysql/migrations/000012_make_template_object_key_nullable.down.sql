@@ -1,0 +1,1 @@
+ALTER TABLE templates MODIFY COLUMN object_key VARCHAR(512) NOT NULL;

@@ -1,0 +1,26 @@
+{
+  "content": [
+    {
+      "type": "tool_use",
+      "id": "toolu_intake_01",
+      "name": "emit_brief",
+      "input": {
+        "objective": "Announce ARMSS's Diwali greeting to clients and candidates",
+        "audience": "Existing clients, candidates, and partner companies",
+        "keyMessage": "Wishing everyone a bright and prosperous Diwali",
+        "occasion": "Diwali 2026",
+        "eventDate": "2026-11-08",
+        "tone": ["warm", "celebratory", "professional"],
+        "format": "social + print poster",
+        "dimensions": "1080x1350",
+        "palette": ["#16265A", "#F5A623", "#D32027"],
+        "mustInclude": ["Diwali greeting", "ARMSS branding"],
+        "avoid": ["firecrackers imagery", "clutter"],
+        "assumptions": ["No specific event or venue was given, so this is treated as a general greeting poster, not an event invite"],
+        "questions": ["Should this target candidates specifically or a general audience?"]
+      }
+    }
+  ],
+  "stop_reason": "tool_use",
+  "usage": { "input_tokens": 380, "output_tokens": 210 }
+}
