@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
@@ -13,9 +14,11 @@ import (
 	"armss-poster-studio/internal/agents"
 	"armss-poster-studio/internal/concurrency"
 	"armss-poster-studio/internal/http/dto"
+	"armss-poster-studio/internal/http/middleware"
 	"armss-poster-studio/internal/http/respond"
 	"armss-poster-studio/internal/imagegen"
 	"armss-poster-studio/internal/pipeline"
+	"armss-poster-studio/internal/ratelimit"
 	"armss-poster-studio/internal/storage"
 	"armss-poster-studio/internal/store/mysql"
 )
@@ -29,10 +32,11 @@ type RenderHandler struct {
 	Store        *storage.Store
 	Bus          *pipeline.Bus
 	Locks        *concurrency.Registry
+	Limiter      *ratelimit.Limiter
 }
 
-func NewRenderHandler(registry *imagegen.Registry, projects *mysql.ProjectsRepo, stageOutputs *mysql.StageOutputsRepo, renders *mysql.RendersRepo, idempotency *mysql.IdempotencyRepo, store *storage.Store, bus *pipeline.Bus, locks *concurrency.Registry) *RenderHandler {
-	return &RenderHandler{Registry: registry, Projects: projects, StageOutputs: stageOutputs, Renders: renders, Idempotency: idempotency, Store: store, Bus: bus, Locks: locks}
+func NewRenderHandler(registry *imagegen.Registry, projects *mysql.ProjectsRepo, stageOutputs *mysql.StageOutputsRepo, renders *mysql.RendersRepo, idempotency *mysql.IdempotencyRepo, store *storage.Store, bus *pipeline.Bus, locks *concurrency.Registry, limiter *ratelimit.Limiter) *RenderHandler {
+	return &RenderHandler{Registry: registry, Projects: projects, StageOutputs: stageOutputs, Renders: renders, Idempotency: idempotency, Store: store, Bus: bus, Locks: locks, Limiter: limiter}
 }
 
 // Render implements POST /projects/:id/render (spec §9). Image generation is
@@ -68,6 +72,18 @@ func (h *RenderHandler) Render(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer unlockProject()
+	}
+
+	user := middleware.UserFromContext(r.Context())
+	if h.Limiter != nil && user != nil {
+		chk, err := h.Limiter.CheckAndRecord(r.Context(), user.ID, mysql.ActionRender)
+		if err == nil && !chk.Allowed {
+			if chk.RetryAfterSeconds > 0 {
+				w.Header().Set("Retry-After", strconv.Itoa(chk.RetryAfterSeconds))
+			}
+			respond.Error(w, http.StatusTooManyRequests, chk.ErrorMessage)
+			return
+		}
 	}
 
 	var req dto.RenderRequest

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Palette, Wand2 } from "lucide-react";
+import { Palette, Sparkles, Wand2 } from "lucide-react";
 import type { ArtDirection, SceneObjectCategory, SSEStatus } from "../../api/types";
 import { StageCard } from "./StageCard";
 import { Button } from "../common/Button";
@@ -165,6 +165,128 @@ export function ArtDirectionStage({ projectId, art, liveStatus }: Props) {
                   <Wand2 className="h-3.5 w-3.5" aria-hidden="true" />
                   Apply changes & regenerate
                 </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Structured Poster Architecture & Spec Inspector */}
+          {art.spec && (
+            <div className="space-y-4 rounded-xl border border-brand-primary/30 bg-gradient-to-b from-[#141A29] to-[#0D111A] p-4 shadow-glass">
+              <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-brand-primary/20 text-brand-accent">
+                    <Sparkles className="h-3.5 w-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white tracking-wide">Poster Specification Architecture</h4>
+                    <p className="text-[10px] text-slate-400">Commercial Art Direction &amp; Depth Framework</p>
+                  </div>
+                </div>
+                <span className="rounded-full bg-brand-primary/20 px-2 py-0.5 text-[10px] font-bold text-brand-accent">
+                  {art.spec.artDirectionStyle}
+                </span>
+              </div>
+
+              {/* Composition Section Percentages Bar */}
+              {art.spec.composition.sections && art.spec.composition.sections.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <span>Layout Proportions ({art.spec.composition.strategy})</span>
+                    <span>100% Vertical Frame</span>
+                  </div>
+                  <div className="flex h-5 w-full overflow-hidden rounded-lg bg-black/40 p-0.5 border border-white/10 text-[9px] font-bold text-white">
+                    {art.spec.composition.sections.map((sec, idx) => {
+                      const colors = [
+                        "bg-blue-600/70",
+                        "bg-amber-600/70",
+                        "bg-purple-600/70",
+                        "bg-rose-600/70",
+                        "bg-emerald-600/70",
+                      ];
+                      return (
+                        <div
+                          key={sec.section}
+                          style={{ width: `${sec.percentage}%` }}
+                          title={`${sec.section.toUpperCase()}: ${sec.role} (${sec.percentage}%)`}
+                          className={`flex items-center justify-center truncate px-1 transition-all hover:brightness-125 ${colors[idx % colors.length]}`}
+                        >
+                          {sec.section} {sec.percentage}%
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {art.spec.composition.framing && (
+                    <p className="text-[11px] text-slate-400 italic">
+                      Framing: {art.spec.composition.framing}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* 3-Plane Depth & Visual Hierarchy */}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5 rounded-lg border border-white/5 bg-white/[0.02] p-2.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
+                    3-Plane Cinematic Depth
+                  </span>
+                  <div className="space-y-1 text-xs">
+                    <p className="text-slate-300">
+                      <strong className="text-white">FG:</strong> {art.spec.depth.foreground}
+                    </p>
+                    <p className="text-slate-300">
+                      <strong className="text-white">MG:</strong> {art.spec.depth.midground}
+                    </p>
+                    <p className="text-slate-300">
+                      <strong className="text-white">BG:</strong> {art.spec.depth.background}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 rounded-lg border border-white/5 bg-white/[0.02] p-2.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">
+                    Visual Hierarchy
+                  </span>
+                  <div className="space-y-1 text-xs">
+                    <p className="text-slate-300">
+                      <strong className="text-white">Primary:</strong> {art.spec.visualHierarchy.primaryElement}
+                    </p>
+                    <p className="text-slate-300">
+                      <strong className="text-white">Secondary:</strong> {art.spec.visualHierarchy.secondaryElement}
+                    </p>
+                    <p className="text-slate-300">
+                      <strong className="text-white">Tertiary:</strong> {art.spec.visualHierarchy.tertiaryElement}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Material Physics & Motivated Lighting */}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1 text-xs rounded-lg border border-white/5 bg-white/[0.02] p-2.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                    Material Surface Realism
+                  </span>
+                  <p className="text-slate-300">
+                    <strong className="text-white">Metals:</strong> {art.spec.materials.metals}
+                  </p>
+                  {art.spec.materials.surfaces && (
+                    <p className="text-slate-300">
+                      <strong className="text-white">Surfaces:</strong> {art.spec.materials.surfaces}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-1 text-xs rounded-lg border border-white/5 bg-white/[0.02] p-2.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">
+                    Motivated Illumination
+                  </span>
+                  <p className="text-slate-300">
+                    <strong className="text-white">Primary:</strong> {art.spec.lighting.primaryLight}
+                  </p>
+                  <p className="text-slate-300">
+                    <strong className="text-white">Rim/Ambient:</strong> {art.spec.lighting.rimLight}
+                  </p>
+                </div>
               </div>
             </div>
           )}

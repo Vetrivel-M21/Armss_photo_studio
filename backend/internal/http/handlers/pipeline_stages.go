@@ -9,8 +9,10 @@ import (
 
 	"armss-poster-studio/internal/agents"
 	"armss-poster-studio/internal/http/dto"
+	"armss-poster-studio/internal/http/middleware"
 	"armss-poster-studio/internal/http/respond"
 	"armss-poster-studio/internal/pipeline"
+	"armss-poster-studio/internal/ratelimit"
 	"armss-poster-studio/internal/storage"
 	"armss-poster-studio/internal/store/mysql"
 )
@@ -21,13 +23,25 @@ type PipelineStagesHandler struct {
 	StageOutputs *mysql.StageOutputsRepo
 	Renders      *mysql.RendersRepo
 	Store        *storage.Store
+	Limiter      *ratelimit.Limiter
 }
 
-func NewPipelineStagesHandler(o *pipeline.Orchestrator, projects *mysql.ProjectsRepo, stageOutputs *mysql.StageOutputsRepo, renders *mysql.RendersRepo, store *storage.Store) *PipelineStagesHandler {
-	return &PipelineStagesHandler{Orchestrator: o, Projects: projects, StageOutputs: stageOutputs, Renders: renders, Store: store}
+func NewPipelineStagesHandler(o *pipeline.Orchestrator, projects *mysql.ProjectsRepo, stageOutputs *mysql.StageOutputsRepo, renders *mysql.RendersRepo, store *storage.Store, limiter *ratelimit.Limiter) *PipelineStagesHandler {
+	return &PipelineStagesHandler{Orchestrator: o, Projects: projects, StageOutputs: stageOutputs, Renders: renders, Store: store, Limiter: limiter}
 }
 
 func (h *PipelineStagesHandler) RerunBrief(w http.ResponseWriter, r *http.Request) {
+	user := middleware.UserFromContext(r.Context())
+	if h.Limiter != nil && user != nil {
+		chk, err := h.Limiter.CheckAndRecord(r.Context(), user.ID, mysql.ActionPipeline)
+		if err == nil && !chk.Allowed {
+			if chk.RetryAfterSeconds > 0 {
+				w.Header().Set("Retry-After", strconv.Itoa(chk.RetryAfterSeconds))
+			}
+			respond.Error(w, http.StatusTooManyRequests, chk.ErrorMessage)
+			return
+		}
+	}
 	id := chi.URLParam(r, "id")
 	var req dto.RerunBriefRequest
 	_ = json.NewDecoder(r.Body).Decode(&req) // extraDetail is optional; a missing/empty body is fine
@@ -40,6 +54,17 @@ func (h *PipelineStagesHandler) RerunBrief(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *PipelineStagesHandler) SelectConcept(w http.ResponseWriter, r *http.Request) {
+	user := middleware.UserFromContext(r.Context())
+	if h.Limiter != nil && user != nil {
+		chk, err := h.Limiter.CheckAndRecord(r.Context(), user.ID, mysql.ActionPipeline)
+		if err == nil && !chk.Allowed {
+			if chk.RetryAfterSeconds > 0 {
+				w.Header().Set("Retry-After", strconv.Itoa(chk.RetryAfterSeconds))
+			}
+			respond.Error(w, http.StatusTooManyRequests, chk.ErrorMessage)
+			return
+		}
+	}
 	id := chi.URLParam(r, "id")
 	n, err := strconv.Atoi(chi.URLParam(r, "n"))
 	if err != nil {
@@ -70,6 +95,17 @@ func (h *PipelineStagesHandler) PatchCopy(w http.ResponseWriter, r *http.Request
 }
 
 func (h *PipelineStagesHandler) RerunArtDirection(w http.ResponseWriter, r *http.Request) {
+	user := middleware.UserFromContext(r.Context())
+	if h.Limiter != nil && user != nil {
+		chk, err := h.Limiter.CheckAndRecord(r.Context(), user.ID, mysql.ActionPipeline)
+		if err == nil && !chk.Allowed {
+			if chk.RetryAfterSeconds > 0 {
+				w.Header().Set("Retry-After", strconv.Itoa(chk.RetryAfterSeconds))
+			}
+			respond.Error(w, http.StatusTooManyRequests, chk.ErrorMessage)
+			return
+		}
+	}
 	id := chi.URLParam(r, "id")
 	var req dto.RerunArtDirectionRequest
 	_ = json.NewDecoder(r.Body).Decode(&req) // excludedObjects is optional; a missing/empty body is fine

@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Image, LayoutTemplate, LogOut, Menu, Settings, Sparkles } from "lucide-react";
+import { Activity, FolderKanban, Image, LayoutTemplate, LogOut, Menu, Settings, Sparkles } from "lucide-react";
 import type { User } from "../../api/types";
 import { useLogout } from "../../hooks/useAuth";
 import { Modal } from "./Modal";
@@ -62,6 +62,12 @@ function NavItems({ user, onNavigate }: { user: User; onNavigate?: () => void })
           Create Poster
         </NavItemContent>
       </NavLink>
+      <NavLink to="/projects" className={navItemClass} onClick={onNavigate}>
+        <NavItemContent>
+          <FolderKanban className="h-4 w-4 text-sky-400 group-hover:text-white transition-colors" aria-hidden="true" />
+          My Posters
+        </NavItemContent>
+      </NavLink>
 
       {user.role === "admin" && (
         <>
@@ -84,6 +90,12 @@ function NavItems({ user, onNavigate }: { user: User; onNavigate?: () => void })
             <NavItemContent>
               <Settings className="h-4 w-4 text-emerald-400 group-hover:text-white transition-colors" aria-hidden="true" />
               AI Providers
+            </NavItemContent>
+          </NavLink>
+          <NavLink to="/admin/usage" className={navItemClass} onClick={onNavigate}>
+            <NavItemContent>
+              <Activity className="h-4 w-4 text-rose-400 group-hover:text-white transition-colors" aria-hidden="true" />
+              Usage &amp; Limits
             </NavItemContent>
           </NavLink>
         </>

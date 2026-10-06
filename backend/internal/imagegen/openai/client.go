@@ -1,7 +1,5 @@
 // Package openai implements imagegen.ImageProvider against OpenAI's
-// gpt-image-1, the only vendor implemented in this build (spec §7 asks for
-// at least one; the ImageProvider interface stays vendor-agnostic so more
-// can be added later without touching the pipeline).
+// DALL-E 3 image generation API.
 package openai
 
 import (
@@ -39,15 +37,16 @@ func NewClient(apiKey, baseURL string, timeout time.Duration, costCents int) *Cl
 }
 
 func (c *Client) Name() string                { return "openai" }
-func (c *Client) SupportsTextRendering() bool { return true } // gpt-image-1 renders text directly — Generate receives FullPosterPrompt
+func (c *Client) SupportsTextRendering() bool { return true } // DALL-E 3 renders text directly — Generate receives FullPosterPrompt
 func (c *Client) Enabled() bool               { return c.apiKey != "" }
 func (c *Client) CostCentsPerImage() int      { return c.costCents }
 
 type generateRequestBody struct {
-	Model  string `json:"model"`
-	Prompt string `json:"prompt"`
-	Size   string `json:"size"`
-	N      int    `json:"n"`
+	Model          string `json:"model"`
+	Prompt         string `json:"prompt"`
+	Size           string `json:"size"`
+	N              int    `json:"n"`
+	ResponseFormat string `json:"response_format"`
 }
 
 type generateResponseBody struct {
@@ -73,7 +72,13 @@ func (c *Client) Generate(ctx context.Context, req imagegen.GenerateRequest) ([]
 		n = 1
 	}
 
-	body := generateRequestBody{Model: "gpt-image-1", Prompt: prompt, Size: mapAspectRatio(req.AspectRatio), N: n}
+	body := generateRequestBody{
+		Model:          "dall-e-3",
+		Prompt:         prompt,
+		Size:           mapAspectRatio(req.AspectRatio),
+		N:              n,
+		ResponseFormat: "b64_json",
+	}
 	payload, err := json.Marshal(body)
 	if err != nil {
 		return nil, fmt.Errorf("marshal openai request: %w", err)

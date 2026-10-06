@@ -26,6 +26,7 @@ import (
 	"armss-poster-studio/internal/imagegen/openai"
 	"armss-poster-studio/internal/observability"
 	"armss-poster-studio/internal/pipeline"
+	"armss-poster-studio/internal/ratelimit"
 	"armss-poster-studio/internal/storage"
 	"armss-poster-studio/internal/store/mysql"
 )
@@ -83,6 +84,9 @@ func main() {
 	rendersRepo := mysql.NewRendersRepo(db)
 	templatesRepo := mysql.NewTemplatesRepo(db)
 	uploadsRepo := mysql.NewUploadsRepo(db)
+	userLimitsRepo := mysql.NewUserLimitsRepo(db)
+	rateRecordsRepo := mysql.NewRateRecordsRepo(db)
+	rateLimiter := ratelimit.NewLimiter(userLimitsRepo, rateRecordsRepo, logger)
 
 	backendCfg := agents.BackendConfig{
 		AnthropicAPIKey:  cfg.AnthropicAPIKey,
@@ -187,15 +191,16 @@ func main() {
 		CORSOrigin:      "http://localhost:5173",
 		Health:          handlers.NewHealthHandler(db, objectStore),
 		Auth:            handlers.NewAuthHandler(authManager),
-		Projects:        handlers.NewProjectsHandler(orchestrator, projectsRepo, stageOutputsRepo, rendersRepo, objectStore),
-		PipelineStages:  handlers.NewPipelineStagesHandler(orchestrator, projectsRepo, stageOutputsRepo, rendersRepo, objectStore),
+		Projects:        handlers.NewProjectsHandler(orchestrator, projectsRepo, stageOutputsRepo, rendersRepo, objectStore, rateLimiter),
+		PipelineStages:  handlers.NewPipelineStagesHandler(orchestrator, projectsRepo, stageOutputsRepo, rendersRepo, objectStore, rateLimiter),
 		SSE:             handlers.NewSSEHandler(bus),
 		Templates:       handlers.NewTemplatesHandler(templatesRepo, objectStore, agentsClient),
 		BrandAssets:     handlers.NewBrandAssetsHandler(brandAssetsRepo, objectStore, assetLoader.Invalidate),
 		Uploads:         handlers.NewUploadsHandler(uploadsRepo, objectStore),
 		Recommendations: handlers.NewRecommendationsHandler(templatesRepo, objectStore, agentsClient),
-		Render:          handlers.NewRenderHandler(imageRegistry, projectsRepo, stageOutputsRepo, rendersRepo, idempotencyRepo, objectStore, bus, concurrencyLocks),
+		Render:          handlers.NewRenderHandler(imageRegistry, projectsRepo, stageOutputsRepo, rendersRepo, idempotencyRepo, objectStore, bus, concurrencyLocks, rateLimiter),
 		Composite:       handlers.NewCompositeHandler(comp, assetLoader, projectsRepo, stageOutputsRepo, rendersRepo, idempotencyRepo, objectStore, bus, concurrencyLocks),
+		Usage:           handlers.NewUsageHandler(userLimitsRepo, rateRecordsRepo),
 		AgentSettings: handlers.NewAgentSettingsHandler(handlers.AgentSettingsHandlerOpts{
 			Client:            agentsClient,
 			Repo:              agentSettingsRepo,

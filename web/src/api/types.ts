@@ -57,10 +57,13 @@ export interface ConceptsPayload {
 }
 
 export interface Copy {
+  eyebrow?: string;
   headline: string;
   subhead: string;
   cta: string;
   valueWords: string[];
+  dateText?: string;
+  tagline?: string;
   alternates: string[];
 }
 
@@ -81,7 +84,82 @@ export interface SceneObject {
   category: SceneObjectCategory;
 }
 
+export interface SectionAllocation {
+  section: string;
+  percentage: number;
+  role: string;
+}
+
+export interface CompositionPlan {
+  strategy: string;
+  description: string;
+  framing?: string;
+  sections: SectionAllocation[];
+}
+
+export interface VisualHierarchy {
+  primaryElement: string;
+  secondaryElement: string;
+  tertiaryElement: string;
+  decorativeElements: string[];
+}
+
+export interface DepthPlanes {
+  foreground: string;
+  midground: string;
+  background: string;
+  focusDepth: string;
+}
+
+export interface RelationalIntegration {
+  interactions: string[];
+  shadows: string;
+  lightSpill: string;
+}
+
+export interface MaterialRealism {
+  metals?: string;
+  fabrics?: string;
+  surfaces?: string;
+  organic?: string;
+}
+
+export interface LightingSetup {
+  primaryLight: string;
+  secondaryLight: string;
+  rimLight: string;
+  atmosphere: string;
+}
+
+export interface ColorDistribution {
+  dominant: string;
+  secondary: string;
+  neutral: string;
+  accents: string;
+}
+
+export interface TypographyPlan {
+  heroTitleTreatment: string;
+  eyebrowStyle: string;
+  dateAndBadges?: string;
+  supportingBody: string;
+}
+
+export interface PosterSpec {
+  artDirectionStyle: string;
+  composition: CompositionPlan;
+  visualHierarchy: VisualHierarchy;
+  depth: DepthPlanes;
+  integration: RelationalIntegration;
+  materials: MaterialRealism;
+  lighting: LightingSetup;
+  colors: ColorDistribution;
+  typography: TypographyPlan;
+  negativeRules?: string[];
+}
+
 export interface ArtDirection {
+  spec?: PosterSpec;
   layout: string;
   focalPoint: string;
   typography: string;

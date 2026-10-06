@@ -29,6 +29,7 @@ type Deps struct {
 	Render          *handlers.RenderHandler
 	Composite       *handlers.CompositeHandler
 	AgentSettings   *handlers.AgentSettingsHandler
+	Usage           *handlers.UsageHandler
 	// Files is only set when running against the local-disk storage backend
 	// (no Docker/MinIO available) — it serves objects back over plain HTTP.
 	Files *handlers.FilesHandler
@@ -89,6 +90,9 @@ func NewRouter(d Deps) *chi.Mux {
 				r.Get("/agent-settings", d.AgentSettings.Get)
 				r.Put("/agent-settings", d.AgentSettings.Put)
 				r.Put("/agent-settings/keys", d.AgentSettings.SetAPIKey)
+				r.Get("/admin/usage", d.Usage.GetUsage)
+				r.Put("/admin/limits", d.Usage.UpdateGlobalLimits)
+				r.Put("/admin/users/{id}/limits", d.Usage.UpdateUserLimits)
 			})
 		})
 	})

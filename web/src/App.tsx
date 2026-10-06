@@ -2,10 +2,12 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useCurrentUser } from "./hooks/useAuth";
 import { LoginPage } from "./pages/LoginPage";
 import { StartPage } from "./pages/StartPage";
+import { ProjectsPage } from "./pages/ProjectsPage";
 import { PipelinePage } from "./pages/PipelinePage";
 import { AdminTemplatesPage } from "./pages/AdminTemplatesPage";
 import { AdminBrandAssetsPage } from "./pages/AdminBrandAssetsPage";
 import { AdminAgentSettingsPage } from "./pages/AdminAgentSettingsPage";
+import { AdminUsagePage } from "./pages/AdminUsagePage";
 import { AppShell } from "./components/common/AppShell";
 import { Spinner } from "./components/common/Spinner";
 
@@ -39,6 +41,7 @@ export default function App() {
 
       <Route element={<RequireAuth />}>
         <Route index element={<StartPage />} />
+        <Route path="projects" element={<ProjectsPage />} />
         <Route path="projects/:id" element={<PipelinePage />} />
       </Route>
 
@@ -46,6 +49,7 @@ export default function App() {
         <Route path="admin/templates" element={<AdminTemplatesPage />} />
         <Route path="admin/brand-assets" element={<AdminBrandAssetsPage />} />
         <Route path="admin/agent-settings" element={<AdminAgentSettingsPage />} />
+        <Route path="admin/usage" element={<AdminUsagePage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

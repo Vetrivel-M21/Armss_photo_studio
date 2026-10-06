@@ -51,14 +51,16 @@ export function StartPage() {
   });
 
   const create = useMutation({
-    mutationFn: () =>
-      projectsApi.create({
-        text,
-        templateId,
-        uploadIds: uploadIds.length ? uploadIds : undefined,
-        logoUploadId,
-        footerText: footerText.trim() ? footerText.trim() : undefined,
-      }),
+    mutationFn: (args?: { text: string; templateId?: string; uploadIds?: string[]; logoUploadId?: string; footerText?: string }) =>
+      projectsApi.create(
+        args ?? {
+          text,
+          templateId,
+          uploadIds: uploadIds.length ? uploadIds : undefined,
+          logoUploadId,
+          footerText: footerText.trim() ? footerText.trim() : undefined,
+        }
+      ),
     onSuccess: (project) => navigate(`/projects/${project.id}`),
     onSettled: () => setIsSubmitting(false),
   });
@@ -67,10 +69,31 @@ export function StartPage() {
   const canGenerate = text.trim().length > 0 && !isBusy;
   const motionSafe = useMotionSafe();
 
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [artStyle, setArtStyle] = useState("auto");
+  const [layoutStrategy, setLayoutStrategy] = useState("auto");
+  const [colorMood, setColorMood] = useState("auto");
+  const [referenceQuality, setReferenceQuality] = useState(true);
+
   const handleCreate = () => {
     if (!canGenerate) return;
     setIsSubmitting(true);
-    create.mutate();
+
+    const promptDirectives = [
+      text.trim(),
+      artStyle !== "auto" ? `Preferred Art Direction: ${artStyle}` : "",
+      layoutStrategy !== "auto" ? `Composition Strategy: ${layoutStrategy}` : "",
+      colorMood !== "auto" ? `Color Palette: ${colorMood}` : "",
+      referenceQuality ? `Mode: Premium Reference Quality (ad-grade composition, 3-plane depth, material realism, motivated lighting, non-hallucinated branding)` : "",
+    ].filter(Boolean).join("\n\n");
+
+    create.mutate({
+      text: promptDirectives,
+      templateId,
+      uploadIds: uploadIds.length ? uploadIds : undefined,
+      logoUploadId,
+      footerText: footerText.trim() ? footerText.trim() : undefined,
+    } as any);
   };
 
   return (
@@ -164,6 +187,104 @@ export function StartPage() {
                   />
                   <p className="text-[11px] text-slate-500">Leave blank for no footer bar on this poster.</p>
                 </div>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Advanced Design Controls (Art Direction, Depth, Palette) */}
+          <div className="border-t border-white/10 pt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setShowAdvanced((v) => !v)}
+              className="w-full justify-between px-0 text-slate-300 hover:bg-transparent hover:text-white font-medium"
+              aria-expanded={showAdvanced}
+            >
+              <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
+                <Sparkles className="h-3.5 w-3.5 text-brand-primary" />
+                Advanced Design Controls (Art Direction &amp; Depth)
+              </span>
+              <ChevronDown className={cn("h-4 w-4 transition-transform text-slate-400", showAdvanced && "rotate-180")} aria-hidden="true" />
+            </Button>
+            {showAdvanced && (
+              <motion.div
+                initial={motionSafe ? { opacity: 0, y: -10 } : undefined}
+                animate={motionSafe ? { opacity: 1, y: 0 } : undefined}
+                className="mt-4 space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-4"
+              >
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                      Art Direction Style
+                    </label>
+                    <select
+                      value={artStyle}
+                      onChange={(e) => setArtStyle(e.target.value)}
+                      className="w-full rounded-xl border border-white/10 bg-[#0C101A] px-3 py-2 text-xs text-slate-200 outline-none focus:border-brand-primary"
+                    >
+                      <option value="auto">Auto / Context-Adaptive</option>
+                      <option value="Premium Corporate Festival (Editorial Advertising)">Premium Corporate Festival (Editorial Advertising)</option>
+                      <option value="Luxury Indian Heritage (Palace Architecture, Antique Gold)">Luxury Indian Heritage (Palace Architecture, Antique Gold)</option>
+                      <option value="Cinematic Festival (Sunset Hour, Golden Illumination)">Cinematic Festival (Sunset Hour, Golden Illumination)</option>
+                      <option value="Modern Corporate Grid (Clean, Contemporary)">Modern Corporate Grid (Clean, Contemporary)</option>
+                      <option value="Minimal Luxury (Deep Matte, Refined Gold Accent)">Minimal Luxury (Deep Matte, Refined Gold Accent)</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                      Composition Layout
+                    </label>
+                    <select
+                      value={layoutStrategy}
+                      onChange={(e) => setLayoutStrategy(e.target.value)}
+                      className="w-full rounded-xl border border-white/10 bg-[#0C101A] px-3 py-2 text-xs text-slate-200 outline-none focus:border-brand-primary"
+                    >
+                      <option value="auto">Auto Proportional Grid</option>
+                      <option value="Hero-Focused (Large 3D Typography, Central Diya/Prop)">Hero-Focused (Large 3D Typography, Central Diya/Prop)</option>
+                      <option value="Layered Cinematic (Foreground Family, Midground Temple, Twilight Sky)">Layered Cinematic (Foreground Family, Midground Temple, Twilight Sky)</option>
+                      <option value="Editorial Arch Framing (Ornate Bells &amp; Floral Toran)">Editorial Arch Framing (Ornate Bells &amp; Floral Toran)</option>
+                      <option value="Grand Symmetrical Courtyard">Grand Symmetrical Courtyard</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                      Color Palette &amp; Mood
+                    </label>
+                    <select
+                      value={colorMood}
+                      onChange={(e) => setColorMood(e.target.value)}
+                      className="w-full rounded-xl border border-white/10 bg-[#0C101A] px-3 py-2 text-xs text-slate-200 outline-none focus:border-brand-primary"
+                    >
+                      <option value="auto">Auto Balanced Harmonious</option>
+                      <option value="Royal Navy (45%), Sunset Crimson (25%), Antique Gold (20%), Marigold (10%)">Royal Navy, Sunset Crimson &amp; Antique Gold</option>
+                      <option value="Deep Maroon &amp; Saffron Glow">Deep Maroon &amp; Saffron Glow</option>
+                      <option value="Imperial Emerald &amp; Warm Brass">Imperial Emerald &amp; Warm Brass</option>
+                      <option value="Midnight Twilight &amp; Amber Flame">Midnight Twilight &amp; Amber Flame</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                      Generation Pipeline
+                    </label>
+                    <label className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-[#0C101A] px-3 py-2 text-xs text-slate-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={referenceQuality}
+                        onChange={(e) => setReferenceQuality(e.target.checked)}
+                        className="h-4 w-4 rounded accent-brand-primary"
+                      />
+                      <span className="font-semibold text-brand-accent">
+                        Premium Reference Quality Mode
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Enforces strict 3-plane depth (Foreground, Midground, Background), authentic material surface physics (brass, silk, marble), motivated flame reflections, and high-end typography hierarchy.
+                </p>
               </motion.div>
             )}
           </div>

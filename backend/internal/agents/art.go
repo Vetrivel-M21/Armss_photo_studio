@@ -12,69 +12,67 @@ import (
 // tagline lockup, or footer bar. A prior attempt at this produced "OARMSS". Instead,
 // the Art Director reserves normalized rectangles for those elements and the backend
 // composites the real brand assets in afterward.
-const artSystemPrompt = `You are the Art Director for ARMSS Poster Studio. Given a creative
-brief, the chosen concept, the copy, and (optionally) a house style profile, produce a full
-art direction spec for the image-generation step.
+const artSystemPrompt = `You are the Lead Art Director and Commercial Creative Architect for ARMSS Poster Studio.
+Your mission is to produce posters with the visual hierarchy, depth, material realism, and professional advertising polish of high-end corporate festival and event campaigns.
 
-CRITICAL RULE: the ARMSS logo, tagline lockup, and contact footer are never drawn by the
-image model. They are composited onto the artwork afterward from real brand asset files.
-Do not name, describe, or reference the ARMSS logo mark anywhere in your prompts — describing
-it (even to ask for it) causes the image model to attempt a fake logo and fail. Instead:
+CRITICAL BRANDING RULE:
+The corporate logo, tagline lockup, and contact footer bar are NEVER drawn by the image model.
+They are composited deterministically onto the artwork afterward from real vector/PNG brand asset files.
+Do not name, draw, or describe the corporate logo or brand marks inside the generated artwork.
+Instead:
+- Reserve normalized (0-1) rectangles in "reservedZones" for whichever zones ("logo", "tagline", "footer") are listed in the user message.
+- "fullPosterPrompt" and "backgroundPrompt" MUST instruct the image model to keep reserved zones clean, neutral, and uncluttered.
+- "negativePrompt" must always ban fake logos, brand marks, wordmarks, watermarks, and text in the reserved zones.
 
-- The user message tells you exactly which zones ("logo", "tagline", "footer") will
-  actually have something composited into them for this poster — reserve space ONLY for
-  those. If none are listed, emit an empty "reservedZones" array and use the full canvas:
-  let the hero visual, headline, and decorative elements naturally fill the space that
-  would otherwise sit empty. Never reserve a zone for something that won't be
-  composited — an unused reserved zone becomes a visibly empty gap in the final poster.
-- For each zone you DO reserve: a normalized (0-1) rectangle the artwork must leave
-  visually clean and uncluttered at those coordinates, with a "fill" hex the background
-  should be in that area and a short "note" describing what will be placed there later
-  (for prompt context only, e.g. "space reserved for brand lockup").
-- "fullPosterPrompt" must explicitly instruct the image model to keep any reserved zones
-  clean, uncluttered, and free of any text or graphic marks.
-- "negativePrompt" must always include: logo, brand marks, wordmark, watermark, text in the
-  top band — in addition to any other negative terms appropriate to the concept.
-- "backgroundPrompt" is the same artwork direction but without any headline/copy text baked
-  in, for providers that can't render text reliably (the backend then typesets the headline
-  itself in that case).
-- "textToRender" lists the exact copy strings (headline, subhead, CTA) the artwork should
-  render, for providers that do support text rendering.
+DESIGN ARCHITECTURE (POSTER_SPEC):
+Never write a vague natural-language prompt filled with empty adjectives ("ultra-realistic 8k stunning").
+Instead, construct a structured "spec" and compile it into a cohesive, physically grounded scene:
 
-VISUAL RICHNESS: A poster with an empty or vague background reads as unfinished. Beyond
-the reserved brand zones, "fullPosterPrompt" and "backgroundPrompt" must describe 3-6
-concrete, specific objects or props that belong to this occasion — not generic phrases
-like "festive decorations" or "decorative elements." Ground these in what you were given:
-translate the concept's "visualMetaphor" into literal objects, pull directly from the
-style profile's "fixedElements" and "imagery" fields when a style profile is supplied, and
-infer occasion-appropriate props from the brief's "occasion" and "keyMessage" when no style
-profile is supplied. For example, for a Diwali poster: "terracotta diyas with lit flames,
-marigold garlands, a brass rangoli pattern in the foreground" rather than "festive Diwali
-decorations." Name real, renderable objects, materials, and their placement — never a
-generic mood phrase as a substitute for actual content.
+1. COMPOSITION & ADAPTIVE PERCENTAGES:
+   Divide the canvas into proportional vertical zones (e.g. Header ~12%, Hero Headline & Visual ~28%, Midground Storytelling ~22%, Foreground Grounding & Family/Props ~26%, Footer Bar ~12%). Adaptive based on occasion.
+   Define framing (e.g. hanging brass bells, marigold toran, architectural arch).
 
-Also emit every one of those objects again as "sceneObjects" — a flat list of {name,
-category} pairs describing exactly the same objects named in fullPosterPrompt, so the UI
-can show the user a categorized breakdown of what's about to be generated. Assign each
-object to exactly one of five fixed categories: "hero" (the single largest/most central
-visual subject — usually 1 object), "cultural" (occasion-specific cultural/traditional
-objects), "nature" (natural elements — sky, plants, landscape), "supporting" (secondary
-objects that reinforce the scene without being decorative filler), "decorative" (patterns,
-motifs, ornamental flourishes, particle/light effects). Not every category needs an entry —
-a corporate poster may have zero "nature" objects — but do not invent objects solely to
-fill a category; only list what you actually described in the prompts. If the user message
-includes an "Excluded objects" list, do not include any of those objects anywhere — in
-fullPosterPrompt, backgroundPrompt, or sceneObjects — and, if needed, replace them with a
-different concrete object of the same category so the scene stays visually rich rather than
-simply emptier.
+2. STRICT VISUAL HIERARCHY:
+   - Primary: Hero focal element (e.g. Grand 3D bevelled antique gold "DIWALI" typography with masked festive textures, or heroic cultural centerpiece).
+   - Secondary: Date badge, value words ("LIGHT • PROSPERITY • JOY • NEW BEGINNINGS").
+   - Tertiary: Supporting emotional message and architectural environment.
+   - Decorative: Subtle hanging bells, marigold garlands, sparkler particles, lotus filigree.
 
-When a reference style profile is supplied, it governs composition, layout, visual
-hierarchy, and lighting direction — how the poster looks. Reflect its "summary" field
-concretely in "layout", "focalPoint", and "fullPosterPrompt" — don't just acknowledge it in
-the abstract. It never governs what the poster says: the user's brief, chosen concept, and
-copy always take priority over the style profile's decorative details. Adapt the style
-profile's colors to any brand palette the brief specifies. Never invent event details,
-dates, prices, or claims that weren't provided in the brief or copy.`
+3. 3-PLANE DEPTH SYSTEM:
+   - Foreground: Tangible physical subjects (e.g. traditional family in fine silk lighting brass lamps, resting naturally on floor, holding sparklers).
+   - Midground: Courtyard or hall with intricate golden floor rangoli, engraved brass diya casting directional light, temple corridor leading into distance.
+   - Background: Majestic temple gopuram or grand architectural facade bathed in warm twilight/sunset sky, soft atmospheric bokeh, floating embers.
+
+4. RELATIONAL SUBJECT INTEGRATION & LIGHTING PHYSICS:
+   Describe physical relationships between all elements:
+   - Diyas physically rest on the floor; they illuminate the rangoli patterns with warm light.
+   - Polished marble or granite reflects the diya flame and floating lotus petals.
+   - Directional soft shadows fall naturally away from light sources.
+   - Subtle warm rim light outlines human subjects and architectural silhouettes against the sunset sky.
+   - NO floating or isolated objects.
+
+5. MATERIAL REALISM:
+   Specify authentic surface physics:
+   - Metals: Antique hammered or engraved brass with soft specular highlights and warm metallic luster.
+   - Fabrics: Rich Kanchipuram silk with intricate golden zari threads and authentic folds.
+   - Stone: Polished dark marble or temple stone with subtle reflective sheen.
+   - Organic: Fresh orange and yellow marigold petals with natural moisture and tactile texture.
+
+6. CONTROLLED COLOR PALETTE:
+   Specify exact harmonious balance (e.g. Royal Navy dominant 40%, Sunset Crimson 25%, Antique Gold neutral 20%, Marigold Saffron accent 15%).
+
+7. HIGH-END TYPOGRAPHY:
+   - Hero: Large 3D sculpted metallic display typography.
+   - Eyebrow: Tracked uppercase sans-serif banner ("CELEBRATING").
+   - Badges: Clean uppercase condensed numerals with lotus or geometric dividers.
+
+8. SCENE OBJECTS:
+   Emit 4-8 concrete objects into "sceneObjects" categorized as "hero", "cultural", "nature", "supporting", or "decorative".
+
+9. FINAL PROMPTS:
+   - "fullPosterPrompt": Complete art-directed scene incorporating the hero typography and festive elements, explicitly preserving reserved zones clean.
+   - "backgroundPrompt": Same photorealistic scene, materials, lighting, and composition but without baked-in typography, for background-only workflows.
+   - "negativePrompt": Rigorous anti-clutter, anti-plastic, and anti-distortion constraints.`
 
 func artToolSchema() map[string]any {
 	strArr := map[string]any{"type": "array", "items": map[string]any{"type": "string"}}
@@ -105,9 +103,112 @@ func artToolSchema() map[string]any {
 		},
 		"required": []string{"name", "category"},
 	}
+	specSchema := map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"artDirectionStyle": map[string]any{"type": "string"},
+			"composition": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"strategy":    map[string]any{"type": "string"},
+					"description": map[string]any{"type": "string"},
+					"framing":     map[string]any{"type": "string"},
+					"sections": map[string]any{
+						"type": "array",
+						"items": map[string]any{
+							"type": "object",
+							"properties": map[string]any{
+								"section":    map[string]any{"type": "string"},
+								"percentage": map[string]any{"type": "integer"},
+								"role":       map[string]any{"type": "string"},
+							},
+							"required": []string{"section", "percentage", "role"},
+						},
+					},
+				},
+				"required": []string{"strategy", "description", "sections"},
+			},
+			"visualHierarchy": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"primaryElement":     map[string]any{"type": "string"},
+					"secondaryElement":   map[string]any{"type": "string"},
+					"tertiaryElement":    map[string]any{"type": "string"},
+					"decorativeElements": strArr,
+				},
+				"required": []string{"primaryElement", "secondaryElement", "tertiaryElement", "decorativeElements"},
+			},
+			"depth": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"foreground": map[string]any{"type": "string"},
+					"midground":  map[string]any{"type": "string"},
+					"background": map[string]any{"type": "string"},
+					"focusDepth": map[string]any{"type": "string"},
+				},
+				"required": []string{"foreground", "midground", "background", "focusDepth"},
+			},
+			"integration": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"interactions": strArr,
+					"shadows":      map[string]any{"type": "string"},
+					"lightSpill":   map[string]any{"type": "string"},
+				},
+				"required": []string{"interactions", "shadows", "lightSpill"},
+			},
+			"materials": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"metals":   map[string]any{"type": "string"},
+					"fabrics":  map[string]any{"type": "string"},
+					"surfaces": map[string]any{"type": "string"},
+					"organic":  map[string]any{"type": "string"},
+				},
+				"required": []string{"metals", "surfaces"},
+			},
+			"lighting": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"primaryLight":   map[string]any{"type": "string"},
+					"secondaryLight": map[string]any{"type": "string"},
+					"rimLight":       map[string]any{"type": "string"},
+					"atmosphere":     map[string]any{"type": "string"},
+				},
+				"required": []string{"primaryLight", "secondaryLight", "rimLight", "atmosphere"},
+			},
+			"colors": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"dominant":  map[string]any{"type": "string"},
+					"secondary": map[string]any{"type": "string"},
+					"neutral":   map[string]any{"type": "string"},
+					"accents":   map[string]any{"type": "string"},
+				},
+				"required": []string{"dominant", "secondary", "neutral", "accents"},
+			},
+			"typography": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"heroTitleTreatment": map[string]any{"type": "string"},
+					"eyebrowStyle":       map[string]any{"type": "string"},
+					"dateAndBadges":      map[string]any{"type": "string"},
+					"supportingBody":     map[string]any{"type": "string"},
+				},
+				"required": []string{"heroTitleTreatment", "eyebrowStyle", "supportingBody"},
+			},
+			"negativeRules": strArr,
+		},
+		"required": []string{
+			"artDirectionStyle", "composition", "visualHierarchy", "depth",
+			"integration", "materials", "lighting", "colors", "typography",
+		},
+	}
+
 	return map[string]any{
 		"type": "object",
 		"properties": map[string]any{
+			"spec":             specSchema,
 			"layout":           map[string]any{"type": "string"},
 			"focalPoint":       map[string]any{"type": "string"},
 			"typography":       map[string]any{"type": "string"},
@@ -117,12 +218,9 @@ func artToolSchema() map[string]any {
 			"backgroundPrompt": map[string]any{"type": "string"},
 			"negativePrompt":   map[string]any{"type": "string"},
 			"aspectRatio":      map[string]any{"type": "string"},
-			// No minItems: reservedZones is driven by which brand elements are
-			// actually available for this poster (see RunArtDirector's
-			// availableZones param) — it can legitimately be empty.
-			"reservedZones":  map[string]any{"type": "array", "items": zone},
-			"compositeSteps": strArr,
-			"sceneObjects":   map[string]any{"type": "array", "items": sceneObject},
+			"reservedZones":    map[string]any{"type": "array", "items": zone},
+			"compositeSteps":   strArr,
+			"sceneObjects":     map[string]any{"type": "array", "items": sceneObject},
 		},
 		"required": []string{
 			"layout", "focalPoint", "typography", "colour", "textToRender",

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -18,6 +19,7 @@ import (
 	"armss-poster-studio/internal/http/respond"
 	"armss-poster-studio/internal/observability"
 	"armss-poster-studio/internal/pipeline"
+	"armss-poster-studio/internal/ratelimit"
 	"armss-poster-studio/internal/storage"
 	"armss-poster-studio/internal/store/mysql"
 )
@@ -28,14 +30,25 @@ type ProjectsHandler struct {
 	StageOutputs *mysql.StageOutputsRepo
 	Renders      *mysql.RendersRepo
 	Store        *storage.Store
+	Limiter      *ratelimit.Limiter
 }
 
-func NewProjectsHandler(o *pipeline.Orchestrator, projects *mysql.ProjectsRepo, stageOutputs *mysql.StageOutputsRepo, renders *mysql.RendersRepo, store *storage.Store) *ProjectsHandler {
-	return &ProjectsHandler{Orchestrator: o, Projects: projects, StageOutputs: stageOutputs, Renders: renders, Store: store}
+func NewProjectsHandler(o *pipeline.Orchestrator, projects *mysql.ProjectsRepo, stageOutputs *mysql.StageOutputsRepo, renders *mysql.RendersRepo, store *storage.Store, limiter *ratelimit.Limiter) *ProjectsHandler {
+	return &ProjectsHandler{Orchestrator: o, Projects: projects, StageOutputs: stageOutputs, Renders: renders, Store: store, Limiter: limiter}
 }
 
 func (h *ProjectsHandler) Create(w http.ResponseWriter, r *http.Request) {
 	user := middleware.UserFromContext(r.Context())
+	if h.Limiter != nil && user != nil {
+		chk, err := h.Limiter.CheckAndRecord(r.Context(), user.ID, mysql.ActionPipeline)
+		if err == nil && !chk.Allowed {
+			if chk.RetryAfterSeconds > 0 {
+				w.Header().Set("Retry-After", strconv.Itoa(chk.RetryAfterSeconds))
+			}
+			respond.Error(w, http.StatusTooManyRequests, chk.ErrorMessage)
+			return
+		}
+	}
 	var req dto.CreateProjectRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respond.Error(w, http.StatusBadRequest, "Request body must be valid JSON with at least a \"text\" field.")

@@ -48,10 +48,13 @@ type Concept struct {
 }
 
 type Copy struct {
+	Eyebrow    string   `json:"eyebrow,omitempty"`
 	Headline   string   `json:"headline"`
 	Subhead    string   `json:"subhead"`
 	CTA        string   `json:"cta"`
 	ValueWords []string `json:"valueWords"`
+	DateText   string   `json:"dateText,omitempty"`
+	Tagline    string   `json:"tagline,omitempty"`
 	Alternates []string `json:"alternates"`
 }
 
@@ -93,7 +96,92 @@ const (
 	ObjectCategoryDecorative = "decorative"
 )
 
+// SectionAllocation defines vertical layout zones with adaptive percentages.
+type SectionAllocation struct {
+	Section    string `json:"section"`    // "header" | "hero" | "middle" | "foreground" | "footer"
+	Percentage int    `json:"percentage"` // e.g. 12, 28, 22, 26, 12
+	Role       string `json:"role"`
+}
+
+// CompositionPlan details layout structure, framing, and layout strategy.
+type CompositionPlan struct {
+	Strategy    string              `json:"strategy"` // "hero_focused" | "editorial_framed" | "layered_cinematic" | "centered_radial"
+	Description string              `json:"description"`
+	Sections    []SectionAllocation `json:"sections"`
+	Framing     string              `json:"framing"` // e.g. "Ornate brass bells and marigold toran framing top arch"
+}
+
+// VisualHierarchy details the prioritized design elements.
+type VisualHierarchy struct {
+	PrimaryElement     string   `json:"primaryElement"`    // e.g. "DIWALI hero 3D metallic display typography"
+	SecondaryElement   string   `json:"secondaryElement"`  // e.g. "8th November 2026 date badge with value pills"
+	TertiaryElement    string   `json:"tertiaryElement"`   // e.g. "Temple corridor illuminated at sunset"
+	DecorativeElements []string `json:"decorativeElements"`// e.g. ["Hanging brass bells", "Marigold garland toran", "Sparkler flares"]
+}
+
+// DepthPlanes defines foreground, midground, and background layers.
+type DepthPlanes struct {
+	Foreground string `json:"foreground"` // e.g. "Indian family in silk attire lighting brass lamps on marble floor"
+	Midground  string `json:"midground"`  // e.g. "Intricate golden floor rangoli with hero engraved diya and illuminated temple corridor"
+	Background string `json:"background"` // e.g. "Majestic South Indian temple gopuram against twilight sky with floating ember particles"
+	FocusDepth string `json:"focusDepth"` // e.g. "Deep cinematic depth-of-field, sharp subjects with soft atmospheric perspective"
+}
+
+// RelationalIntegration models physical interactions between objects.
+type RelationalIntegration struct {
+	Interactions []string `json:"interactions"` // e.g. ["Diya flame casts warm golden light onto rangoli", "Reflections shimmer on polished marble"]
+	Shadows      string   `json:"shadows"`      // e.g. "Directional soft shadows falling outward from the central diya"
+	LightSpill   string   `json:"lightSpill"`   // e.g. "Warm amber light spill on family hands and silk fabric folds"
+}
+
+// MaterialRealism models tangible, realistic surfaces instead of generic terms.
+type MaterialRealism struct {
+	Metals   string `json:"metals"`   // e.g. "Hand-carved antique brass with soft specular highlights, polished warm reflections"
+	Fabrics  string `json:"fabrics"`  // e.g. "Rich Kanchipuram silk with woven gold zari threads and natural drape"
+	Surfaces string `json:"surfaces"` // e.g. "Polished dark granite/marble reflecting diya flames and flower petals"
+	Organic  string `json:"organic"`  // e.g. "Fresh orange and yellow marigold flowers with visible moisture and petal texture"
+}
+
+// LightingSetup models directional, motivated illumination.
+type LightingSetup struct {
+	PrimaryLight   string `json:"primaryLight"`   // e.g. "Warm organic flame light from oil diyas"
+	SecondaryLight string `json:"secondaryLight"` // e.g. "Golden hour twilight ambient illumination"
+	RimLight       string `json:"rimLight"`       // e.g. "Subtle warm rim light outlining family silhouettes and temple architecture"
+	Atmosphere     string `json:"atmosphere"`     // e.g. "Subtle floating golden sparkles and holy incense haze"
+}
+
+// ColorDistribution specifies the harmonious palette balance.
+type ColorDistribution struct {
+	Dominant  string `json:"dominant"`  // e.g. "Deep Royal Navy (40%)"
+	Secondary string `json:"secondary"` // e.g. "Warm Sunset Crimson (25%)"
+	Neutral   string `json:"neutral"`   // e.g. "Lustrous Antique Gold (20%)"
+	Accents   string `json:"accents"`   // e.g. "Vibrant Marigold Saffron (15%)"
+}
+
+// TypographyPlan defines typographic treatment for each hierarchy level.
+type TypographyPlan struct {
+	HeroTitleTreatment string `json:"heroTitleTreatment"` // e.g. "Grand 3D bevelled antique gold metallic lettering with masked festival imagery"
+	EyebrowStyle       string `json:"eyebrowStyle"`       // e.g. "Clean tracked uppercase sans-serif"
+	DateAndBadges      string `json:"dateAndBadges"`      // e.g. "Bold condensed numerals flanked by traditional lotus filigree dividers"
+	SupportingBody     string `json:"supportingBody"`     // e.g. "Warm italicized editorial serif typography"
+}
+
+// PosterSpec is the complete creative specification constructed before prompt synthesis.
+type PosterSpec struct {
+	ArtDirectionStyle string                `json:"artDirectionStyle"`
+	Composition       CompositionPlan       `json:"composition"`
+	VisualHierarchy   VisualHierarchy       `json:"visualHierarchy"`
+	Depth             DepthPlanes           `json:"depth"`
+	Integration       RelationalIntegration `json:"integration"`
+	Materials         MaterialRealism       `json:"materials"`
+	Lighting          LightingSetup         `json:"lighting"`
+	Colors            ColorDistribution     `json:"colors"`
+	Typography        TypographyPlan        `json:"typography"`
+	NegativeRules     []string              `json:"negativeRules"`
+}
+
 type ArtDirection struct {
+	Spec             *PosterSpec   `json:"spec,omitempty"`
 	Layout           string        `json:"layout"`
 	FocalPoint       string        `json:"focalPoint"`
 	Typography       string        `json:"typography"`
@@ -131,6 +219,6 @@ const (
 	MaxTokensStyle    = 4000
 	MaxTokensIntake   = 4000
 	MaxTokensDirector = 4000
-	MaxTokensCopy     = 3000
-	MaxTokensArt      = 4000
+	MaxTokensCopy     = 4000
+	MaxTokensArt      = 6000
 )

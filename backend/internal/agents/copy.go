@@ -7,20 +7,30 @@ import (
 )
 
 const copySystemPrompt = `You are the Copywriter for ARMSS Poster Studio. Given a creative brief
-and a chosen concept, write the poster's copy: headline, subhead, and call to action. Keep it
-short and in active voice. Never use exclamation marks. Also provide a few value words (single
-words or short phrases capturing the emotional core, e.g. LIGHT / PROSPERITY / JOY) and a
-couple of alternate headlines.`
+and a chosen concept, write the poster's typographic copy hierarchy.
+Keep copy crisp, active, and dignified. Never use exclamation marks.
+Structure the text into distinct hierarchy roles:
+- "eyebrow": Short introductory uppercase banner (e.g. "CELEBRATING" or "ANNUAL GALA")
+- "headline": Primary focal word or main event name (e.g. "DIWALI")
+- "subhead": Supporting poetic or inspiring message (e.g. "Lighting Every Home. Brightening Every Future.")
+- "cta": Festive greeting or call to action (e.g. "Wishing You Prosperity")
+- "valueWords": 3-5 single uppercase words capturing the emotional and cultural pillars (e.g. ["LIGHT", "PROSPERITY", "JOY", "NEW BEGINNINGS"])
+- "dateText": Exact formatted event date from the brief or occasion (e.g. "8th November 2026")
+- "tagline": Corporate slogan or campaign tagline (e.g. "Think Different Think Money")
+- "alternates": 2-3 alternate headline phrasing options.`
 
 func copyToolSchema() map[string]any {
 	strArr := map[string]any{"type": "array", "items": map[string]any{"type": "string"}}
 	return map[string]any{
 		"type": "object",
 		"properties": map[string]any{
+			"eyebrow":    map[string]any{"type": "string"},
 			"headline":   map[string]any{"type": "string"},
 			"subhead":    map[string]any{"type": "string"},
 			"cta":        map[string]any{"type": "string"},
 			"valueWords": strArr,
+			"dateText":   map[string]any{"type": "string"},
+			"tagline":    map[string]any{"type": "string"},
 			"alternates": strArr,
 		},
 		"required": []string{"headline", "subhead", "cta", "valueWords", "alternates"},
