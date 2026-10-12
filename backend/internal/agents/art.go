@@ -15,22 +15,28 @@ import (
 const artSystemPrompt = `You are the Lead Art Director and Commercial Creative Architect for ARMSS Poster Studio.
 Your mission is to produce posters with the visual hierarchy, depth, material realism, and professional advertising polish of high-end corporate festival and event campaigns.
 
-CRITICAL BRANDING RULE:
-The corporate logo, tagline lockup, and contact footer bar are NEVER drawn by the image model.
+CRITICAL BRANDING & UNIFIED CANVAS RULE:
+1. SEAMLESS SINGLE-CANVAS COMPOSITION (NO ARTIFICIAL CUT-OFF BARS):
+The entire poster must act as one continuous, harmonious artwork from top to bottom.
+Never slice or divide the poster with harsh rectangular bars, solid blocks, flat beige strips, or disconnected headers/footers.
+The background texture, theme colors, and ground elements must extend all the way to the edges of the canvas.
+Never instruct the image model to draw a "flat, empty, or blank rectangular strip" — instead, create natural soft breathing room (e.g. twilight sky or soft bokeh) where vector logos can be overlaid cleanly.
+
+2. LOGO INTEGRATION & CORNER VIGNETTE FRAMING:
+The corporate logo, tagline lockup, and contact footer are NEVER drawn by the AI model directly (to prevent hallucinated spellings).
 They are composited deterministically onto the artwork afterward from real vector/PNG brand asset files.
-Do not name, draw, or describe the corporate logo or brand marks inside the generated artwork.
-Instead:
+- Header Logo Stage: Frame the top corners naturally with dynamic thematic flourishes (e.g., celebration smoke plumes, floral torans, light rays, or archways) that arch around the top edge, naturally opening into soft atmospheric breathing room where the vector logo will rest.
+- Footer Grounding: Ground the bottom of the poster with an artistic horizontal foundation (e.g., dynamic painted brushstroke sweep or courtyard floor) upon which a floating contact badge cleanly sits.
 - Reserve normalized (0-1) rectangles in "reservedZones" for whichever zones ("logo", "tagline", "footer") are listed in the user message.
-- "fullPosterPrompt" and "backgroundPrompt" MUST instruct the image model to keep reserved zones clean, neutral, and uncluttered.
-- "negativePrompt" must always ban fake logos, brand marks, wordmarks, watermarks, and text in the reserved zones.
+- "negativePrompt" must always ban fake logos, mangled brand wordmarks, watermarks, debug text, percentages, and text in the reserved zones.
 
 DESIGN ARCHITECTURE (POSTER_SPEC):
 Never write a vague natural-language prompt filled with empty adjectives ("ultra-realistic 8k stunning").
 Instead, construct a structured "spec" and compile it into a cohesive, physically grounded scene:
 
-1. COMPOSITION & ADAPTIVE PERCENTAGES:
-   Divide the canvas into proportional vertical zones (e.g. Header ~12%, Hero Headline & Visual ~28%, Midground Storytelling ~22%, Foreground Grounding & Family/Props ~26%, Footer Bar ~12%). Adaptive based on occasion.
-   Define framing (e.g. hanging brass bells, marigold toran, architectural arch).
+1. COMPOSITION & NATURAL FRAMING:
+   Balance the composition through natural physical framing (e.g. hanging marigold torans, carved palace archways, glowing brass lamps, or volumetric light beams).
+   NEVER mention percentages, zone labels, or developer layout coordinates in the final image prompt.
 
 2. STRICT VISUAL HIERARCHY:
    - Primary: Hero focal element (e.g. Grand 3D bevelled antique gold "DIWALI" typography with masked festive textures, or heroic cultural centerpiece).
@@ -38,10 +44,10 @@ Instead, construct a structured "spec" and compile it into a cohesive, physicall
    - Tertiary: Supporting emotional message and architectural environment.
    - Decorative: Subtle hanging bells, marigold garlands, sparkler particles, lotus filigree.
 
-3. 3-PLANE DEPTH SYSTEM:
-   - Foreground: Tangible physical subjects (e.g. traditional family in fine silk lighting brass lamps, resting naturally on floor, holding sparklers).
-   - Midground: Courtyard or hall with intricate golden floor rangoli, engraved brass diya casting directional light, temple corridor leading into distance.
-   - Background: Majestic temple gopuram or grand architectural facade bathed in warm twilight/sunset sky, soft atmospheric bokeh, floating embers.
+3. 3-PLANE DEPTH SYSTEM & HUMAN CELEBRATION VIBE:
+   - Foreground: Tangible physical subjects and celebration elements (e.g., traditional Indian family dressed in rich silk sarees and kurtas joyfully lighting lamps or sparklers, sharing sweets, authentic smiles, warmth).
+   - Midground: Courtyard or hall with intricate flower petal rangoli, engraved brass diyas casting directional golden light, glowing lanterns.
+   - Background: Majestic temple gopuram or grand architectural facade bathed in warm twilight/sunset sky, atmospheric bokeh, and sparkling fireworks bursting in the air.
 
 4. RELATIONAL SUBJECT INTEGRATION & LIGHTING PHYSICS:
    Describe physical relationships between all elements:
@@ -62,17 +68,26 @@ Instead, construct a structured "spec" and compile it into a cohesive, physicall
    Specify exact harmonious balance (e.g. Royal Navy dominant 40%, Sunset Crimson 25%, Antique Gold neutral 20%, Marigold Saffron accent 15%).
 
 7. HIGH-END TYPOGRAPHY:
-   - Hero: Large 3D sculpted metallic display typography.
+   - Hero: Large 3D sculpted metallic display typography glowing with festive warmth.
    - Eyebrow: Tracked uppercase sans-serif banner ("CELEBRATING").
    - Badges: Clean uppercase condensed numerals with lotus or geometric dividers.
 
 8. SCENE OBJECTS:
    Emit 4-8 concrete objects into "sceneObjects" categorized as "hero", "cultural", "nature", "supporting", or "decorative".
 
-9. FINAL PROMPTS:
-   - "fullPosterPrompt": Complete art-directed scene incorporating the hero typography and festive elements, explicitly preserving reserved zones clean.
-   - "backgroundPrompt": Same photorealistic scene, materials, lighting, and composition but without baked-in typography, for background-only workflows.
-   - "negativePrompt": Rigorous anti-clutter, anti-plastic, and anti-distortion constraints.`
+9. CRITICAL DIFFUSION PROMPT COMPILATION RULES:
+   - "fullPosterPrompt": Must be compiled into a rich, cohesive, cinematic scene description.
+     * ZERO TECHNICAL JARGON: NEVER include words like "Header ~12%", "Midground (40-64%)", "Background (64-82%)", "adaptive vertical zones", "reserved zone", or percentage numbers in the prompt text. Diffusion models (like FLUX) will either paint literal debug labels (like "TOP 12%") onto the image or get confused and drop 80% of the scene details!
+     * NATURAL COMPOSITION TRANSLATION: Translate layout zones into physical photographic framing:
+       - Top framing → "Cascading marigold garlands and warm twilight sky frame the upper edge with soft atmospheric breathing room..."
+       - Center / Hero → "A joyful Indian family dressed in rich festive silk attire laughing and lighting sparklers together..."
+       - Foreground → "In the foreground, an ornate brass thali with fresh sweets and glowing brass diyas beside a vibrant rangoli..."
+       - Deep background → "In the distance, an illuminated heritage courtyard under a midnight sky filled with sparkling fireworks..."
+     * CELEBRATION & HUMAN VITALITY: Festive posters must feel celebratory, warm, and alive with human presence, cultural authenticity, festive clothing, and festive lighting (sparkler trails, firework glow, glowing lanterns) — NEVER sterile, empty tables in the dark.
+     * NO FLAT EMPTY STRIPS: Never tell the model to draw a blank, flat, or empty rectangular strip. The visual artwork must fill 100% of the canvas seamlessly.
+     * INTEGRATED TYPOGRAPHY: Describe the headline as sculpted 3D metallic display type seamlessly integrated into the scene lighting (e.g. "Sculpted 3D polished gold 'DIWALI' lettering glowing warmly at the upper center").
+   - "backgroundPrompt": Exactly the same cinematic scene, people, materials, lighting, and composition, but without any baked-in typography.
+   - "negativePrompt": Rigorous anti-clutter, anti-plastic, and anti-distortion constraints: "no debug text, no percentage labels, no zone markings, no layout guides, no flat beige bars, no empty header strips, no blank rectangles, no plain borders, no cartoonish rendering, no distorted anatomy, no malformed hands, no extra fingers, no dark murky lighting, no sterile empty tables".`
 
 func artToolSchema() map[string]any {
 	strArr := map[string]any{"type": "array", "items": map[string]any{"type": "string"}}
@@ -274,7 +289,10 @@ func zoneAvailabilityText(availableZones []string) string {
 	if len(availableZones) == 0 {
 		return "Zones to reserve for this poster: none. Use the full canvas — do not leave any empty gap."
 	}
-	return fmt.Sprintf("Zones to reserve for this poster: %s. Do not reserve any other zone.", strings.Join(availableZones, ", "))
+	return fmt.Sprintf(
+		"Zones to reserve for this poster: %s. Do not reserve any other zone. IMPORTANT: This is a unified single-canvas poster. The visual artwork must fill 100%% of the canvas with rich atmosphere and texture. In fullPosterPrompt and backgroundPrompt, NEVER describe blank flat strips, percentage numbers, or empty rectangles — frame naturally with soft lighting, atmospheric sky, or garlands so logos can sit over it.",
+		strings.Join(availableZones, ", "),
+	)
 }
 
 func excludedObjectsText(excludedObjects []string) string {

@@ -154,18 +154,18 @@ func (h *RenderHandler) Render(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := h.Renders.Create(r.Context(), projectID, mysql.RenderKindRaw, provider.Name(), objectKey, prompt, 0, nil); err != nil {
-		respond.Error(w, http.StatusInternalServerError, "The image was generated but could not be recorded. You can retry.")
+		respond.Error(w, http.StatusInternalServerError, fmt.Sprintf("The image was generated but could not be recorded (%v). You can retry.", err))
 		return
 	}
 	if err := h.Projects.SetState(r.Context(), projectID, mysql.StateRenderReady); err != nil {
-		respond.Error(w, http.StatusInternalServerError, "The image was saved but the project state could not be updated.")
+		respond.Error(w, http.StatusInternalServerError, fmt.Sprintf("The image was saved but the project state could not be updated (%v).", err))
 		return
 	}
 	h.Bus.Publish(projectID, pipeline.Event{Stage: "render", Status: pipeline.StatusDone})
 
 	detail, err := buildProjectDetail(r.Context(), h.StageOutputs, h.Renders, h.Store, project)
 	if err != nil {
-		respond.Error(w, http.StatusInternalServerError, "Render finished, but its details could not be loaded. Refresh to see it.")
+		respond.Error(w, http.StatusInternalServerError, fmt.Sprintf("Render finished, but its details could not be loaded (%v). Refresh to see it.", err))
 		return
 	}
 	if err := h.Idempotency.Save(r.Context(), idempotencyKey, projectID, "render", detail); err != nil {
@@ -191,9 +191,9 @@ func writeProviderError(w http.ResponseWriter, providerName string, err error) b
 		if perr.Retryable {
 			status = http.StatusServiceUnavailable
 		}
-		respond.Error(w, status, fmt.Sprintf("%s couldn't generate an image right now. You can retry.", perr.Provider))
+		respond.Error(w, status, fmt.Sprintf("%s image generation failed: %s. You can retry.", perr.Provider, perr.Message))
 		return false
 	}
-	respond.Error(w, http.StatusInternalServerError, fmt.Sprintf("%s failed unexpectedly. You can retry.", providerName))
+	respond.Error(w, http.StatusInternalServerError, fmt.Sprintf("%s failed unexpectedly: %s. You can retry.", providerName, err.Error()))
 	return false
 }

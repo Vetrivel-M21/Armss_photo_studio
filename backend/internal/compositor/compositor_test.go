@@ -57,18 +57,24 @@ func TestComposite_DrawsFooterBarInBrandNavy(t *testing.T) {
 	}
 
 	img := decodePNG(t, out)
-	// Sample the far-right of the footer bar, away from the icon/text on the left.
-	r, g, b, _ := img.At(950, 950).RGBA()
-	wantR, wantG, wantB := uint32(0x16), uint32(0x26), uint32(0x5A)
+	// The center of the floating pill at (500, 950) should be drawn with brand navy.
+	r, g, b, _ := img.At(500, 950).RGBA()
 	gotR, gotG, gotB := r>>8, g>>8, b>>8
-	if gotR != wantR || gotG != wantG || gotB != wantB {
-		t.Errorf("footer bar color at (950,950) = rgb(%d,%d,%d), want rgb(%d,%d,%d)", gotR, gotG, gotB, wantR, wantG, wantB)
+	// Pill interior should have brand navy tone
+	if gotR > 0x40 || gotB < 0x30 {
+		t.Errorf("center of floating badge = rgb(%d,%d,%d), expected navy tone", gotR, gotG, gotB)
 	}
 
-	// Outside the footer zone must be untouched.
+	// Outside the pill at the edge of canvas (980, 950), artwork is preserved (white), not severed by a bar!
+	rEdge, gEdge, bEdge, _ := img.At(980, 950).RGBA()
+	if rEdge>>8 != 0xff || gEdge>>8 != 0xff || bEdge>>8 != 0xff {
+		t.Errorf("artwork edge at (980,950) was cut off by a solid bar: rgb(%d,%d,%d)", rEdge>>8, gEdge>>8, bEdge>>8)
+	}
+
+	// Outside the footer zone completely (500, 100) must be untouched.
 	r2, g2, b2, _ := img.At(500, 100).RGBA()
 	if r2>>8 != 0xff || g2>>8 != 0xff || b2>>8 != 0xff {
-		t.Errorf("area outside the footer zone was modified: rgb(%d,%d,%d)", r2>>8, g2>>8, b2>>8)
+		t.Errorf("area outside footer zone was modified: rgb(%d,%d,%d)", r2>>8, g2>>8, b2>>8)
 	}
 }
 

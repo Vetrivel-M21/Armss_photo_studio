@@ -38,7 +38,7 @@ func NewRendersRepo(db *sqlx.DB) *RendersRepo {
 
 func (r *RendersRepo) Create(ctx context.Context, projectID, kind, provider, objectKey, prompt string, costCents int, meta any) (*Render, error) {
 	id := uuid.NewString()
-	var metaJSON []byte
+	metaJSON := []byte(`{}`)
 	if meta != nil {
 		var err error
 		metaJSON, err = json.Marshal(meta)
@@ -60,7 +60,7 @@ func (r *RendersRepo) Create(ctx context.Context, projectID, kind, provider, obj
 func (r *RendersRepo) GetByID(ctx context.Context, id string) (*Render, error) {
 	var render Render
 	err := r.db.GetContext(ctx, &render,
-		`SELECT id, project_id, kind, provider, object_key, prompt, cost_cents, meta, created_at
+		`SELECT id, project_id, kind, provider, object_key, prompt, cost_cents, COALESCE(meta, JSON_OBJECT()) AS meta, created_at
 		 FROM renders WHERE id = ?`, id)
 	if err != nil {
 		return nil, fmt.Errorf("get render: %w", err)
@@ -73,7 +73,7 @@ func (r *RendersRepo) GetByID(ctx context.Context, id string) (*Render, error) {
 func (r *RendersRepo) ListByProject(ctx context.Context, projectID string) ([]Render, error) {
 	var renders []Render
 	err := r.db.SelectContext(ctx, &renders,
-		`SELECT id, project_id, kind, provider, object_key, prompt, cost_cents, meta, created_at
+		`SELECT id, project_id, kind, provider, object_key, prompt, cost_cents, COALESCE(meta, JSON_OBJECT()) AS meta, created_at
 		 FROM renders WHERE project_id = ? ORDER BY created_at DESC`, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("list renders: %w", err)

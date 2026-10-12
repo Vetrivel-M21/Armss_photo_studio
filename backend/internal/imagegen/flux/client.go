@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -47,11 +48,31 @@ func NewClient(apiKey, baseURL, model string, timeout time.Duration, costCents i
 	if timeout <= 0 {
 		timeout = 120 * time.Second
 	}
+	dialer := &net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+	}
+	tr := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			// Prefer IPv4 to avoid broken IPv6 routes on local networks
+			conn, err := dialer.DialContext(ctx, "tcp4", addr)
+			if err != nil {
+				return dialer.DialContext(ctx, network, addr)
+			}
+			return conn, nil
+		},
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   15 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
 	return &Client{
 		apiKey:     apiKey,
 		baseURL:    strings.TrimRight(baseURL, "/"),
 		model:      model,
-		httpClient: &http.Client{Timeout: timeout},
+		httpClient: &http.Client{Transport: tr, Timeout: timeout},
 		timeout:    timeout,
 		retryCfg:   retry.DefaultConfig(),
 		costCents:  costCents,
@@ -112,8 +133,9 @@ type replicateResponseBody struct {
 }
 
 type bflTaskResponse struct {
-	ID     string `json:"id"`
-	Status string `json:"status,omitempty"`
+	ID         string `json:"id"`
+	PollingURL string `json:"polling_url,omitempty"`
+	Status     string `json:"status,omitempty"`
 }
 
 type bflResultResponse struct {
@@ -147,7 +169,7 @@ func (c *Client) Generate(ctx context.Context, req imagegen.GenerateRequest) ([]
 			out, retryable, callErr = c.doFalGenerate(callCtx, prompt, req.AspectRatio)
 		} else if strings.Contains(c.baseURL, "replicate.com") || strings.HasPrefix(c.apiKey, "r8_") {
 			out, retryable, callErr = c.doReplicateGenerate(callCtx, prompt, req.AspectRatio)
-		} else if strings.Contains(c.baseURL, "bfl.ml") {
+		} else if strings.Contains(c.baseURL, "bfl.ml") || strings.Contains(c.baseURL, "bfl.ai") || strings.HasPrefix(c.apiKey, "bfl_") {
 			out, retryable, callErr = c.doBFLGenerate(callCtx, prompt, req.AspectRatio)
 		} else {
 			out, retryable, callErr = c.doTogetherGenerate(callCtx, prompt, req.AspectRatio)
@@ -433,8 +455,15 @@ func (c *Client) doBFLGenerate(ctx context.Context, prompt, ratio string) ([]ima
 	}
 
 	endpoint := c.baseURL
-	if !strings.Contains(endpoint, "/flux-") {
-		endpoint = endpoint + "/v1/flux-pro-1.1"
+	if !strings.Contains(endpoint, "bfl.ml") && !strings.Contains(endpoint, "bfl.ai") {
+		endpoint = "https://api.bfl.ai"
+	}
+	if !strings.Contains(endpoint, "/v1/") {
+		model := c.model
+		if model == "" {
+			model = "flux-pro-1.1"
+		}
+		endpoint = strings.TrimRight(endpoint, "/") + "/v1/" + strings.TrimPrefix(model, "/")
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
@@ -446,7 +475,7 @@ func (c *Client) doBFLGenerate(ctx context.Context, prompt, ratio string) ([]ima
 
 	httpRes, err := c.httpClient.Do(httpReq)
 	if err != nil {
-		return nil, true, &imagegen.ProviderError{Provider: "flux", Message: "failed to connect to BFL API", Retryable: true}
+		return nil, true, &imagegen.ProviderError{Provider: "flux", Message: fmt.Sprintf("failed to connect to BFL API (%s): %v", endpoint, err), Retryable: true}
 	}
 	defer httpRes.Body.Close()
 
@@ -471,11 +500,18 @@ func (c *Client) doBFLGenerate(ctx context.Context, prompt, ratio string) ([]ima
 		return nil, false, &imagegen.ProviderError{Provider: "flux", Message: "BFL returned empty task id", Retryable: false}
 	}
 
-	return c.pollBFL(ctx, task.ID)
+	return c.pollBFL(ctx, task.ID, task.PollingURL)
 }
 
-func (c *Client) pollBFL(ctx context.Context, taskID string) ([]imagegen.GeneratedImage, bool, error) {
-	pollURL := "https://api.bfl.ml/v1/get_result?id=" + taskID
+func (c *Client) pollBFL(ctx context.Context, taskID, pollingURL string) ([]imagegen.GeneratedImage, bool, error) {
+	pollURL := pollingURL
+	if pollURL == "" {
+		base := c.baseURL
+		if !strings.HasPrefix(base, "http") {
+			base = "https://api.bfl.ai"
+		}
+		pollURL = strings.TrimRight(base, "/") + "/v1/get_result?id=" + taskID
+	}
 	ticker := time.NewTicker(1500 * time.Millisecond)
 	defer ticker.Stop()
 

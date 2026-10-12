@@ -4,6 +4,11 @@
 // (spec §17 — that breaks silently on truncation).
 package agents
 
+import (
+	"encoding/json"
+	"strings"
+)
+
 // PaletteHex is one color in a StyleProfile's palette, with its role in the design.
 type PaletteHex struct {
 	Hex  string `json:"hex"`
@@ -45,6 +50,39 @@ type Concept struct {
 	VisualMetaphor string `json:"visualMetaphor"`
 	Mood           string `json:"mood"`
 	Palette        string `json:"palette"`
+}
+
+func (c *Concept) UnmarshalJSON(data []byte) error {
+	type alias Concept
+	var a alias
+	if err := json.Unmarshal(data, &a); err == nil && (a.Name != "" || a.BigIdea != "" || a.VisualMetaphor != "") {
+		*c = Concept(a)
+		return nil
+	}
+
+	var raw map[string]any
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	getStr := func(keys ...string) string {
+		for _, k := range keys {
+			if v, ok := raw[k]; ok {
+				if s, ok := v.(string); ok && strings.TrimSpace(s) != "" {
+					return strings.TrimSpace(s)
+				}
+			}
+		}
+		return ""
+	}
+
+	c.Name = getStr("name", "title", "concept", "conceptName", "concept_name")
+	c.BigIdea = getStr("bigIdea", "big_idea", "idea", "concept_idea", "description")
+	c.VisualMetaphor = getStr("visualMetaphor", "visual_metaphor", "metaphor", "visual", "visuals")
+	c.Mood = getStr("mood", "atmosphere", "tone")
+	c.Palette = getStr("palette", "color_palette", "colors", "colorPalette")
+
+	return nil
 }
 
 type Copy struct {
