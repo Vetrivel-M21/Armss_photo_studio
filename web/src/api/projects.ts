@@ -26,10 +26,14 @@ export const projectsApi = {
   // Render and composite cost real money per click, so each call uses an
   // idempotency key — a retried request replays the stored result instead of
   // generating (or compositing) a second time (spec §13).
-  render: (id: string, provider?: string, idempotencyKey?: string) =>
-    api.post<ProjectDetail>(`/projects/${id}/render`, provider ? { provider } : {}, {
-      "Idempotency-Key": idempotencyKey || newIdempotencyKey(),
-    }),
+  render: (id: string, provider?: string, aspectRatio?: string, idempotencyKey?: string) =>
+    api.post<ProjectDetail>(
+      `/projects/${id}/render`,
+      provider || aspectRatio ? { ...(provider ? { provider } : {}), ...(aspectRatio ? { aspectRatio } : {}) } : {},
+      {
+        "Idempotency-Key": idempotencyKey || newIdempotencyKey(),
+      }
+    ),
   composite: (id: string, zoneOverrides?: Record<string, ZoneOverride>, idempotencyKey?: string) =>
     api.post<ProjectDetail>(`/projects/${id}/composite`, zoneOverrides ? { zoneOverrides } : {}, {
       "Idempotency-Key": idempotencyKey || newIdempotencyKey(),

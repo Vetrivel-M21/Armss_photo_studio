@@ -254,14 +254,20 @@ func artToolSchema() map[string]any {
 // scene objects the user has explicitly removed from a previous run's
 // sceneObjects list — the Art Director keeps them out of the artwork entirely
 // rather than just noting them as unwanted.
-func (c *Client) RunArtDirector(ctx context.Context, brief Brief, concept Concept, cp Copy, style *StyleProfile, availableZones, excludedObjects []string) (ArtDirection, Usage, error) {
+// RunArtDirector is agent 5: Brief + Concept + Copy + StyleProfile + zone hints + target provider → ArtDirection.
+// zoneHintText translates the project's aspect ratio, logo position, logo scale,
+// slogan position, and slogan scale into photographic framing language.
+// targetProvider instructs the Art Director to natively optimize the prompt syntax
+// specifically for the target engine (Flux, Ideogram, or DALL-E) on the first pass.
+func (c *Client) RunArtDirector(ctx context.Context, brief Brief, concept Concept, cp Copy, style *StyleProfile, availableZones, excludedObjects []string, zoneHintText string, targetProvider string) (ArtDirection, Usage, error) {
 	briefJSON, _ := json.MarshalIndent(brief, "", "  ")
 	conceptJSON, _ := json.MarshalIndent(concept, "", "  ")
 	copyJSON, _ := json.MarshalIndent(cp, "", "  ")
 	prompt := fmt.Sprintf(
-		"Creative brief:\n%s\n\nChosen concept:\n%s\n\nCopy:\n%s\n\n%s\n\n%s\n\n%s",
+		"Creative brief:\n%s\n\nChosen concept:\n%s\n\nCopy:\n%s\n\n%s\n\n%s\n\n%s\n\nZone placement constraints:\n%s\n\n%s",
 		string(briefJSON), string(conceptJSON), string(copyJSON), styleContext(style),
-		zoneAvailabilityText(availableZones), excludedObjectsText(excludedObjects),
+		zoneAvailabilityText(availableZones), excludedObjectsText(excludedObjects), zoneHintText,
+		providerPromptGuidance(targetProvider),
 	)
 
 	result, err := c.CallTool(ctx, ToolCallRequest{
@@ -300,4 +306,28 @@ func excludedObjectsText(excludedObjects []string) string {
 		return "Excluded objects: none."
 	}
 	return fmt.Sprintf("Excluded objects: %s. Do not include these anywhere in the artwork.", strings.Join(excludedObjects, ", "))
+}
+
+func providerPromptGuidance(provider string) string {
+	switch strings.ToLower(strings.TrimSpace(provider)) {
+	case "ideogram":
+		return `TARGET IMAGE GENERATION ENGINE: IDEOGRAM v2
+This poster prompt will be rendered by Ideogram v2, which specializes in typography, graphic design layout, and text rendering:
+1. EXPLICIT TYPOGRAPHY & QUOTES: In fullPosterPrompt, place the exact headline and festival typography in explicit double quotes with styling cues (e.g. 'Bold 3D embossed metallic gold lettering stating "HAPPY DIWALI" with warm ambient glow').
+2. GRAPHIC POSTER LAYOUT: Clearly structure the visual hierarchy with distinct focal areas: hero typography in the upper-third or center, celebration cultural elements in the lower-third, and clean breathing space at the designated logo position.
+3. VIBRANT COLOR HARMONY: Emphasize high-contrast design tones, celebratory palettes, and crisp graphic finishes.`
+	case "openai", "dall-e", "dall-e-3", "dalle":
+		return `TARGET IMAGE GENERATION ENGINE: DALL-E 3
+This poster prompt will be rendered by OpenAI DALL-E 3, which prioritizes narrative storytelling and scene semantics:
+1. NARRATIVE SCENE SEMANTICS: Formulate the prompt as a vivid, cohesive narrative paragraph describing subject relationships, environmental lighting, and authentic human emotions.
+2. POSITIVE CONSTRAINTS: Since DALL-E 3 does not accept a negative prompt parameter, weave constraints naturally into positive descriptions (e.g. "A pristine, clear twilight sky completely uncluttered and free of any text, signs, or watermarks").`
+	case "flux":
+		fallthrough
+	default:
+		return `TARGET IMAGE GENERATION ENGINE: FLUX.1
+This poster prompt will be rendered by Flux.1, which excels at photorealistic physical textures, lighting physics, and continuous composition:
+1. NATURAL DESCRIPTIVE PROSE: Write detailed, continuous descriptive paragraphs. Describe the scene through physical lighting, material shaders, and camera optics (e.g. "Shot on 35mm lens, f/2.4, cinematic volumetric lighting").
+2. NO SPAM BUZZWORDS: Strictly avoid generic buzzwords such as "photorealistic", "hyperrealistic", "8k resolution", "trending on artstation", "award winning". Describe physical details instead.
+3. SEAMLESS UNIFIED CANVAS: Keep the canvas visually rich from edge to edge. At the logo and slogan positions, frame with soft atmospheric elements (such as twilight sky or subtle bokeh) that naturally provide clean contrast for overlaid vector assets.`
+	}
 }

@@ -18,7 +18,7 @@ type StarterTemplate struct {
 // used rather than inventing per-template values that aren't actually there.
 const aspectRatioHint = " Recommended aspect ratios: 4:5, 1:1, 2:3."
 
-// StarterLibrary returns the 40 bundled starter templates.
+// StarterLibrary returns the 43 bundled starter templates.
 func StarterLibrary() []StarterTemplate {
 	return []StarterTemplate{
 		{
@@ -220,6 +220,21 @@ func StarterLibrary() []StarterTemplate {
 			Title:    "Education / Academic",
 			Category: "Education",
 			Prompt:   "Professional education poster using a clean academic composition. Central student, educator or educational environment as the hero visual. Structured headline area, supporting information blocks, subtle geometric academic motifs and organized spacing. Bright professional lighting, approachable visual tone and high readability. Premium school, college, training, workshop and educational campaign aesthetic." + aspectRatioHint,
+		},
+		{
+			Title:    "Educational Trust & Admissions",
+			Category: "Education",
+			Prompt:   "High-end commercial Indian educational foundation and admissions poster composition in portrait 3:4 orientation. Deep midnight blue and royal navy background framed with ornate antique gold Indian mandala patterns and filigree along the upper frame and corners. Radiant glowing circular medallion centered in the upper-mid section depicting an affectionate Indian mother in traditional attire with her school children in uniform against a warm sunlit campus. Surrounding the center medallion are dynamic, floating 3D educational and sports icons including graduation caps, hardcover books, brass microscope, colorful globe, cricket gear, and art palette with soft directional shadows and warm rim lighting. The lower half features clean circular badge stages and an elegant bottom grounding banner for call-to-action announcements with soft atmospheric breathing room for typography and brand marks. Sharp focus, cinematic studio lighting, premium commercial advertising quality. Recommended aspect ratios: 3:4, 4:5.",
+		},
+		{
+			Title:    "Cinematic Studio / Media Entertainment",
+			Category: "Cinematic",
+			Prompt:   "High-impact cinematic film studio and media production promotional poster composition in portrait 3:4 orientation. Dark atmospheric movie production soundstage background with dramatic cool-blue overhead studio lighting and warm golden rim light. In the upper-right corner, an authentic studio spotlight with barn doors casts a directional diagonal beam cutting through subtle atmospheric haze and blue anamorphic lens flare. In the foreground, professional cinema filmmaking gear including a modern digital cinema camera on a rig, a classic director's slate clapperboard with chalk handwriting, and vintage metallic 35mm film reels unwinding glossy celluloid strips across the bottom. The midground features a clear central stage for bold dimensional brand typography, framed with four glowing neon circular feature badges (cyan, magenta, green, amber). Soft atmospheric breathing room in the upper and lower thirds for logos, titles, and social handles. Premium entertainment brand advertising aesthetic, sharp photorealistic commercial finish. Recommended aspect ratios: 3:4, 4:5.",
+		},
+		{
+			Title:    "Royal Gold Jewelry / Luxury Retail",
+			Category: "Luxury",
+			Prompt:   "Opulent luxury Indian gold jewelry advertising poster composition in portrait 2:3 orientation. Deep rich royal crimson and maroon crushed velvet background framed by an ornate antique gold filigree border with intricate engraved corner flourishes. The midground features an exquisite commercial product display: a sleek matte black jewelry bust draped in multi-tiered traditional Indian gold necklaces with intricate temple craftsmanship, accompanied by matching jhumka earrings, alongside gleaming stacks of carved gold bangles, bracelets, and rings elegantly arranged on plush velvet folds. Warm sparkling pin-spot studio lighting producing brilliant golden glints, specular highlights, and soft rich shadows. The upper and lower thirds feature clean bordered framing zones with gold trim, providing pristine atmospheric space for 3D metallic gold headlines, valuation trust seals, and commercial contact banners. Masterpiece luxury commercial jewelry advertising aesthetic, photorealistic detail. Recommended aspect ratios: 2:3, 3:4.",
 		},
 	}
 }

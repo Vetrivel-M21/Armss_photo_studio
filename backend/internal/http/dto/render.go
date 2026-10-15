@@ -1,7 +1,8 @@
 package dto
 
 type RenderRequest struct {
-	Provider string `json:"provider,omitempty"`
+	Provider    string `json:"provider,omitempty"`
+	AspectRatio string `json:"aspectRatio,omitempty"`
 }
 
 // ZoneOverrideRequest mirrors compositor.ZoneOverride but as wire-friendly

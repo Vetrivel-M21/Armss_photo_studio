@@ -129,11 +129,20 @@ func (h *RenderHandler) Render(w http.ResponseWriter, r *http.Request) {
 		prompt = art.BackgroundPrompt
 	}
 
+	aspectRatio := art.AspectRatio
+	if req.AspectRatio != "" {
+		aspectRatio = req.AspectRatio
+		if req.AspectRatio != art.AspectRatio {
+			art.AspectRatio = req.AspectRatio
+			_, _ = pipeline.InsertSuperseding(r.Context(), h.StageOutputs, projectID, mysql.StageArt, art, "user-override", 0, 0)
+		}
+	}
+
 	h.Bus.Publish(projectID, pipeline.Event{Stage: "render", Status: pipeline.StatusRunning})
 	images, err := provider.Generate(r.Context(), imagegen.GenerateRequest{
 		Prompt:         prompt,
 		NegativePrompt: art.NegativePrompt,
-		AspectRatio:    art.AspectRatio,
+		AspectRatio:    aspectRatio,
 		N:              1,
 	})
 	if !writeProviderError(w, provider.Name(), err) {

@@ -23,18 +23,19 @@ type Orchestrator struct {
 	StageOutputs *mysql.StageOutputsRepo
 	ProjectRefs  *mysql.ProjectReferencesRepo
 	Templates    *mysql.TemplatesRepo
-	Uploads      *mysql.UploadsRepo
-	BrandAssets  *mysql.BrandAssetsRepo
-	Bus          *Bus
-	Logger       *slog.Logger
-	Locks        *concurrency.Registry
+	Uploads              *mysql.UploadsRepo
+	BrandAssets          *mysql.BrandAssetsRepo
+	Bus                  *Bus
+	Logger               *slog.Logger
+	Locks                *concurrency.Registry
+	DefaultImageProvider string
 }
 
 // CreateProject implements the start of Flow A/B/C (spec §3): create the
 // project, analyse any attached reference images (Flow C), resolve the style
 // profile (from the selected template or the freshly-analysed uploads), then
 // run Intake and the Creative Director back to back.
-func (o *Orchestrator) CreateProject(ctx context.Context, userID, inputText string, templateID *string, uploadIDs []string, logoUploadID *string, footerText *string) (*mysql.Project, error) {
+func (o *Orchestrator) CreateProject(ctx context.Context, userID, inputText string, templateID *string, uploadIDs []string, logoUploadID *string, footerText *string, hints mysql.ZoneHints) (*mysql.Project, error) {
 	if !o.Agents.Enabled() {
 		return nil, agents.ErrAgentsUnavailable
 	}
@@ -48,7 +49,7 @@ func (o *Orchestrator) CreateProject(ctx context.Context, userID, inputText stri
 		logoObjectKey = &up.ObjectKey
 	}
 
-	project, err := o.Projects.Create(ctx, userID, inputText, templateID, logoObjectKey, footerText)
+	project, err := o.Projects.Create(ctx, userID, inputText, templateID, logoObjectKey, footerText, hints)
 	if err != nil {
 		return nil, fmt.Errorf("create project: %w", err)
 	}
@@ -293,11 +294,18 @@ func (o *Orchestrator) runArtDirection(ctx context.Context, project *mysql.Proje
 	}
 
 	o.Bus.Publish(projectID, Event{Stage: "art_direction", Status: StatusRunning})
-	art, usage, err := o.Agents.RunArtDirector(ctx, brief, concept, cp, style, availableZones, excludedObjects)
+	art, usage, err := o.Agents.RunArtDirector(ctx, brief, concept, cp, style, availableZones, excludedObjects, zoneHintPromptText(project), o.DefaultImageProvider)
 	if err != nil {
 		o.Bus.Publish(projectID, Event{Stage: "art_direction", Status: StatusError, Payload: errPayload()})
 		return fmt.Errorf("run art director: %w", err)
 	}
+
+	// Apply deterministic zone geometry derived from the project's zone hints
+	// (logo_position, logo_scale, slogan_position, slogan_scale). This replaces
+	// the old approach of scraping position keywords from inputText, which was
+	// fragile and invisible to the Art Director when writing the image prompt.
+	applyZoneGeometry(art.ReservedZones, project)
+
 	if _, err := InsertSuperseding(ctx, o.StageOutputs, projectID, mysql.StageArt, art, o.Agents.ModelName(), usage.TokensIn, usage.TokensOut); err != nil {
 		return err
 	}

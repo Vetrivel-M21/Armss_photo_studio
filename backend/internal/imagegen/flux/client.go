@@ -445,9 +445,16 @@ func (c *Client) doBFLGenerate(ctx context.Context, prompt, ratio string) ([]ima
 	if aspectRatio == "" {
 		aspectRatio = "4:5"
 	}
+	w, h := mapAspectRatioToDimensions(aspectRatio)
 	body := map[string]any{
-		"prompt":       prompt,
-		"aspect_ratio": aspectRatio,
+		"prompt": prompt,
+		"width":  w,
+		"height": h,
+	}
+	if strings.Contains(c.model, "ultra") {
+		delete(body, "width")
+		delete(body, "height")
+		body["aspect_ratio"] = aspectRatio
 	}
 	payload, err := json.Marshal(body)
 	if err != nil {
@@ -579,6 +586,8 @@ func mapAspectRatioToDimensions(ratio string) (int, int) {
 		return 896, 1152
 	case "3:4":
 		return 768, 1024
+	case "2:3":
+		return 768, 1152
 	case "9:16":
 		return 768, 1344
 	case "16:9":

@@ -7,15 +7,15 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api/v1": {
-        target: "http://localhost:8080",
+        target: "http://localhost:8083",
         changeOrigin: true,
       },
       "/files": {
-        target: "http://localhost:8080",
+        target: "http://localhost:8083",
         changeOrigin: true,
       },
-      "/healthz": "http://localhost:8080",
-      "/readyz": "http://localhost:8080",
+      "/healthz": "http://localhost:8083",
+      "/readyz": "http://localhost:8083",
     },
   },
 });

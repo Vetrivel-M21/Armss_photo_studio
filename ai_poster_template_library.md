@@ -451,6 +451,36 @@ Professional education poster using a clean academic composition. Central studen
 
 ---
 
+# Template 41 — Educational Trust & Admissions
+
+**ID:** `educational-trust-admissions`
+
+```text
+High-end commercial Indian educational foundation and admissions poster composition in portrait 3:4 orientation. Deep midnight blue and royal navy background framed with ornate antique gold Indian mandala patterns and filigree along the upper frame and corners. Radiant glowing circular medallion centered in the upper-mid section depicting an affectionate Indian mother in traditional attire with her school children in uniform against a warm sunlit campus. Surrounding the center medallion are dynamic, floating 3D educational and sports icons including graduation caps, hardcover books, brass microscope, colorful globe, cricket gear, and art palette with soft directional shadows and warm rim lighting. The lower half features clean circular badge stages and an elegant bottom grounding banner for call-to-action announcements with soft atmospheric breathing room for typography and brand marks. Sharp focus, cinematic studio lighting, premium commercial advertising quality.
+```
+
+---
+
+# Template 42 — Cinematic Studio / Media Entertainment
+
+**ID:** `cinematic-studio-entertainment`
+
+```text
+High-impact cinematic film studio and media production promotional poster composition in portrait 3:4 orientation. Dark atmospheric movie production soundstage background with dramatic cool-blue overhead studio lighting and warm golden rim light. In the upper-right corner, an authentic studio spotlight with barn doors casts a directional diagonal beam cutting through subtle atmospheric haze and blue anamorphic lens flare. In the foreground, professional cinema filmmaking gear including a modern digital cinema camera on a rig, a classic director's slate clapperboard with chalk handwriting, and vintage metallic 35mm film reels unwinding glossy celluloid strips across the bottom. The midground features a clear central stage for bold dimensional brand typography, framed with four glowing neon circular feature badges (cyan, magenta, green, amber). Soft atmospheric breathing room in the upper and lower thirds for logos, titles, and social handles. Premium entertainment brand advertising aesthetic, sharp photorealistic commercial finish.
+```
+
+---
+
+# Template 43 — Royal Gold Jewelry / Luxury Retail
+
+**ID:** `royal-gold-jewelry`
+
+```text
+Opulent luxury Indian gold jewelry advertising poster composition in portrait 2:3 orientation. Deep rich royal crimson and maroon crushed velvet background framed by an ornate antique gold filigree border with intricate engraved corner flourishes. The midground features an exquisite commercial product display: a sleek matte black jewelry bust draped in multi-tiered traditional Indian gold necklaces with intricate temple craftsmanship, accompanied by matching jhumka earrings, alongside gleaming stacks of carved gold bangles, bracelets, and rings elegantly arranged on plush velvet folds. Warm sparkling pin-spot studio lighting producing brilliant golden glints, specular highlights, and soft rich shadows. The upper and lower thirds feature clean bordered framing zones with gold trim, providing pristine atmospheric space for 3D metallic gold headlines, valuation trust seals, and commercial contact banners. Masterpiece luxury commercial jewelry advertising aesthetic, photorealistic detail.
+```
+
+---
+
 # Template Selection Rules
 
 When the user selects a template:

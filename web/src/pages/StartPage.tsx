@@ -69,30 +69,57 @@ export function StartPage() {
   const canGenerate = text.trim().length > 0 && !isBusy;
   const motionSafe = useMotionSafe();
 
+  const [aspectRatio, setAspectRatio] = useState("3:4");
+  const [logoMode, setLogoMode] = useState<"composite" | "generate">("composite");
+  const [logoPosition, setLogoPosition] = useState<"top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-right">("top-center");
+  const [logoScale, setLogoScale] = useState<"compact" | "standard" | "prominent">("standard");
+  const [sloganPosition, setSloganPosition] = useState<"below-logo" | "above-footer" | "top" | "bottom">("below-logo");
+  const [sloganScale, setSloganScale] = useState<"compact" | "standard" | "prominent">("standard");
+  const [footerVisible, setFooterVisible] = useState(true);
+
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [artStyle, setArtStyle] = useState("auto");
   const [layoutStrategy, setLayoutStrategy] = useState("auto");
   const [colorMood, setColorMood] = useState("auto");
   const [referenceQuality, setReferenceQuality] = useState(true);
 
+
   const handleCreate = () => {
     if (!canGenerate) return;
     setIsSubmitting(true);
 
-    const promptDirectives = [
-      text.trim(),
+    // Build advanced design directives (art style, palette, etc.) as freetext.
+    // Zone hints (aspect ratio, logo, slogan) are sent as structured fields so
+    // the backend can use them deterministically — never parsed from free text.
+    const advancedDirectives = [
       artStyle !== "auto" ? `Preferred Art Direction: ${artStyle}` : "",
       layoutStrategy !== "auto" ? `Composition Strategy: ${layoutStrategy}` : "",
       colorMood !== "auto" ? `Color Palette: ${colorMood}` : "",
-      referenceQuality ? `Mode: Premium Reference Quality (ad-grade composition, 3-plane depth, material realism, motivated lighting, non-hallucinated branding)` : "",
+      referenceQuality
+        ? `Mode: Premium Reference Quality (ad-grade composition, 3-plane depth, material realism, motivated lighting)`
+        : "",
+      logoMode === "generate"
+        ? `Logo Integration: Generate a 3D sculpted metallic/thematic logo emblem seamlessly integrated into the artwork.`
+        : "",
     ].filter(Boolean).join("\n\n");
 
+    const fullText = advancedDirectives
+      ? `${text.trim()}\n\n${advancedDirectives}`
+      : text.trim();
+
     create.mutate({
-      text: promptDirectives,
+      text: fullText,
       templateId,
       uploadIds: uploadIds.length ? uploadIds : undefined,
-      logoUploadId,
+      logoUploadId: logoMode === "composite" ? logoUploadId : undefined,
       footerText: footerText.trim() ? footerText.trim() : undefined,
+      // Structured zone hints — backend converts these to exact (0–1) geometry.
+      aspectRatio,
+      logoPosition,
+      logoScale,
+      sloganPosition,
+      sloganScale,
+      footerVisible,
     } as any);
   };
 
@@ -150,6 +177,41 @@ export function StartPage() {
         <div className="relative mt-6 space-y-5 rounded-2xl border border-white/10 bg-[#0C101A]/90 p-5 shadow-glass backdrop-blur-xl sm:mt-7 sm:p-6">
           <OccasionTextArea value={text} onChange={setText} />
 
+          {/* Poster Aspect Ratio Selector */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                Poster Aspect Ratio
+              </label>
+              <span className="text-[11px] font-semibold text-brand-primary">{aspectRatio} Selected</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+              {[
+                { ratio: "3:4", label: "3:4", sub: "Portrait", desc: "School & Event Flyers" },
+                { ratio: "4:5", label: "4:5", sub: "Social", desc: "Instagram Feed" },
+                { ratio: "1:1", label: "1:1", sub: "Square", desc: "WhatsApp / Feed" },
+                { ratio: "2:3", label: "2:3", sub: "Poster", desc: "Movie & Jewelry" },
+                { ratio: "9:16", label: "9:16", sub: "Story", desc: "Full Mobile Status" },
+                { ratio: "16:9", label: "16:9", sub: "Landscape", desc: "Banner / TV / Web" },
+              ].map((item) => (
+                <button
+                  key={item.ratio}
+                  type="button"
+                  onClick={() => setAspectRatio(item.ratio)}
+                  className={cn(
+                    "flex flex-col items-center justify-center rounded-xl border p-2.5 text-center transition-all",
+                    aspectRatio === item.ratio
+                      ? "border-brand-primary bg-brand-primary/20 text-white shadow-glow-sm"
+                      : "border-white/10 bg-white/[0.02] text-slate-400 hover:border-white/20 hover:bg-white/[0.05] hover:text-slate-200"
+                  )}
+                >
+                  <span className="text-xs font-bold">{item.label}</span>
+                  <span className="text-[10px] opacity-75">{item.sub}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {recommendEnabled && recommendations && recommendations.length > 0 && (
             <RecommendationList recommendations={recommendations} selectedId={templateId} onSelect={setTemplateId} />
           )}
@@ -163,7 +225,7 @@ export function StartPage() {
               aria-expanded={showBranding}
             >
               <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
-                Custom Branding &amp; Reference Assets
+                Custom Branding &amp; Logo Placement
               </span>
               <ChevronDown className={cn("h-4 w-4 transition-transform text-slate-400", showBranding && "rotate-180")} aria-hidden="true" />
             </Button>
@@ -173,8 +235,188 @@ export function StartPage() {
                 animate={motionSafe ? { opacity: 1, y: 0 } : undefined}
                 className="mt-4 space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-4"
               >
+                {/* Logo Mode Selection */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-slate-300">Logo Integration Mode</label>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => setLogoMode("composite")}
+                      className={cn(
+                        "rounded-xl border p-3 text-left transition-all",
+                        logoMode === "composite"
+                          ? "border-brand-primary bg-brand-primary/15 text-white shadow-glow-sm"
+                          : "border-white/10 bg-[#0C101A] text-slate-400 hover:border-white/20 hover:text-slate-200"
+                      )}
+                    >
+                      <div className="text-xs font-bold">Vector Composite Overlay</div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">
+                        Overlays your crisp authentic PNG/SVG logo into reserved breathing space.
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLogoMode("generate")}
+                      className={cn(
+                        "rounded-xl border p-3 text-left transition-all",
+                        logoMode === "generate"
+                          ? "border-brand-primary bg-brand-primary/15 text-white shadow-glow-sm"
+                          : "border-white/10 bg-[#0C101A] text-slate-400 hover:border-white/20 hover:text-slate-200"
+                      )}
+                    >
+                      <div className="text-xs font-bold">Generate 3D Logo in Artwork</div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">
+                        AI directly sculpts brand typography/emblem into the 3D lighting scene.
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {logoMode === "composite" && (
+                  <LogoUpload onChange={setLogoUploadId} />
+                )}
+
+                {/* Logo Position & Size */}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-300">Logo Placement</label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[
+                        { id: "top-left", label: "Top Left" },
+                        { id: "top-center", label: "Top Center" },
+                        { id: "top-right", label: "Top Right" },
+                        { id: "bottom-left", label: "Bottom Left" },
+                        { id: "bottom-right", label: "Bottom Right" },
+                      ].map((pos) => (
+                        <button
+                          key={pos.id}
+                          type="button"
+                          onClick={() => setLogoPosition(pos.id as any)}
+                          className={cn(
+                            "rounded-lg border px-2 py-1.5 text-center text-[11px] font-medium transition-all",
+                            logoPosition === pos.id
+                              ? "border-brand-primary bg-brand-primary/20 text-white font-bold"
+                              : "border-white/10 bg-[#0C101A] text-slate-400 hover:text-slate-200"
+                          )}
+                        >
+                          {pos.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-300">Logo Size / Space</label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[
+                        { id: "compact", label: "Compact", sub: "12% width" },
+                        { id: "standard", label: "Standard", sub: "18% width" },
+                        { id: "prominent", label: "Prominent", sub: "25% width" },
+                      ].map((scale) => (
+                        <button
+                          key={scale.id}
+                          type="button"
+                          onClick={() => setLogoScale(scale.id as any)}
+                          className={cn(
+                            "rounded-lg border px-2 py-1.5 text-center text-[11px] font-medium transition-all",
+                            logoScale === scale.id
+                              ? "border-brand-primary bg-brand-primary/20 text-white font-bold"
+                              : "border-white/10 bg-[#0C101A] text-slate-400 hover:text-slate-200"
+                          )}
+                        >
+                          <div>{scale.label}</div>
+                          <div className="text-[9px] opacity-75">{scale.sub}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Slogan / Tagline Zone — independent from logo */}
+                <div className="rounded-xl border border-white/10 bg-white/[0.015] p-3 space-y-3">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">💬 Slogan / Tagline Zone</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-slate-300">Slogan Placement</label>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {[
+                          { id: "below-logo", label: "Below Logo" },
+                          { id: "above-footer", label: "Above Footer" },
+                          { id: "top", label: "Top" },
+                          { id: "bottom", label: "Bottom" },
+                        ].map((pos) => (
+                          <button
+                            key={pos.id}
+                            type="button"
+                            onClick={() => setSloganPosition(pos.id as any)}
+                            className={cn(
+                              "rounded-lg border px-2 py-1.5 text-center text-[11px] font-medium transition-all",
+                              sloganPosition === pos.id
+                                ? "border-amber-400/60 bg-amber-400/15 text-amber-300 font-bold"
+                                : "border-white/10 bg-[#0C101A] text-slate-400 hover:text-slate-200"
+                            )}
+                          >
+                            {pos.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-slate-300">Slogan Size</label>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { id: "compact", label: "Compact", sub: "12%" },
+                          { id: "standard", label: "Standard", sub: "18%" },
+                          { id: "prominent", label: "Prominent", sub: "25%" },
+                        ].map((scale) => (
+                          <button
+                            key={scale.id}
+                            type="button"
+                            onClick={() => setSloganScale(scale.id as any)}
+                            className={cn(
+                              "rounded-lg border px-2 py-1.5 text-center text-[11px] font-medium transition-all",
+                              sloganScale === scale.id
+                                ? "border-amber-400/60 bg-amber-400/15 text-amber-300 font-bold"
+                                : "border-white/10 bg-[#0C101A] text-slate-400 hover:text-slate-200"
+                            )}
+                          >
+                            <div>{scale.label}</div>
+                            <div className="text-[9px] opacity-75">{scale.sub}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer bar toggle */}
+                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.015] px-3 py-2">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-300">📞 Contact Footer Bar</p>
+                    <p className="text-[11px] text-slate-500">Always placed at the very bottom, full width.</p>
+                  </div>
+                  <label className="flex cursor-pointer items-center gap-2">
+                    <span className="text-[11px] text-slate-400">{footerVisible ? "Visible" : "Hidden"}</span>
+                    <div
+                      onClick={() => setFooterVisible((v) => !v)}
+                      className={cn(
+                        "relative h-5 w-9 rounded-full transition-colors cursor-pointer",
+                        footerVisible ? "bg-brand-primary" : "bg-slate-700"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform",
+                          footerVisible ? "translate-x-4" : "translate-x-0.5"
+                        )}
+                      />
+                    </div>
+                  </label>
+                </div>
+
                 <FileAttach onChange={setUploadIds} />
-                <LogoUpload onChange={setLogoUploadId} />
+
                 <div className="space-y-1.5">
                   <label htmlFor="footerText" className="text-xs font-medium text-slate-300">
                     Contact / footer bar text (optional)

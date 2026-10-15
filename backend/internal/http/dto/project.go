@@ -6,11 +6,18 @@ import (
 )
 
 type CreateProjectRequest struct {
-	Text         string   `json:"text"`
-	TemplateID   *string  `json:"templateId,omitempty"`
-	UploadIDs    []string `json:"uploadIds,omitempty"`
-	LogoUploadID *string  `json:"logoUploadId,omitempty"`
-	FooterText   *string  `json:"footerText,omitempty"`
+	Text           string   `json:"text"`
+	TemplateID     *string  `json:"templateId,omitempty"`
+	UploadIDs      []string `json:"uploadIds,omitempty"`
+	LogoUploadID   *string  `json:"logoUploadId,omitempty"`
+	FooterText     *string  `json:"footerText,omitempty"`
+	// Zone hints — set once at creation, govern logo/slogan placement.
+	AspectRatio    string   `json:"aspectRatio,omitempty"`    // e.g. "3:4"
+	LogoPosition   string   `json:"logoPosition,omitempty"`   // e.g. "top-center"
+	LogoScale      string   `json:"logoScale,omitempty"`      // "compact"|"standard"|"prominent"
+	SloganPosition string   `json:"sloganPosition,omitempty"` // e.g. "below-logo"
+	SloganScale    string   `json:"sloganScale,omitempty"`    // "compact"|"standard"|"prominent"
+	FooterVisible  *bool    `json:"footerVisible,omitempty"`  // nil → true
 }
 
 type RerunBriefRequest struct {
@@ -57,15 +64,21 @@ type RenderView struct {
 }
 
 type ProjectDetail struct {
-	ID         string                     `json:"id"`
-	Title      *string                    `json:"title,omitempty"`
-	InputText  string                     `json:"inputText"`
-	TemplateID *string                    `json:"templateId,omitempty"`
-	LogoURL    *string                    `json:"logoUrl,omitempty"`
-	FooterText *string                    `json:"footerText,omitempty"`
-	State      string                     `json:"state"`
-	CreatedAt  time.Time                  `json:"createdAt"`
-	UpdatedAt  time.Time                  `json:"updatedAt"`
-	Stages     map[string]StageOutputView `json:"stages"`
-	Renders    []RenderView               `json:"renders"`
+	ID             string                     `json:"id"`
+	Title          *string                    `json:"title,omitempty"`
+	InputText      string                     `json:"inputText"`
+	TemplateID     *string                    `json:"templateId,omitempty"`
+	LogoURL        *string                    `json:"logoUrl,omitempty"`
+	FooterText     *string                    `json:"footerText,omitempty"`
+	AspectRatio    string                     `json:"aspectRatio"`
+	LogoPosition   string                     `json:"logoPosition"`
+	LogoScale      string                     `json:"logoScale"`
+	SloganPosition string                     `json:"sloganPosition"`
+	SloganScale    string                     `json:"sloganScale"`
+	FooterVisible  bool                       `json:"footerVisible"`
+	State          string                     `json:"state"`
+	CreatedAt      time.Time                  `json:"createdAt"`
+	UpdatedAt      time.Time                  `json:"updatedAt"`
+	Stages         map[string]StageOutputView `json:"stages"`
+	Renders        []RenderView               `json:"renders"`
 }

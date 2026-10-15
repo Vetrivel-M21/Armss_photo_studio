@@ -157,9 +157,10 @@ func main() {
 		Templates:    templatesRepo,
 		Uploads:      uploadsRepo,
 		BrandAssets:  brandAssetsRepo,
-		Bus:          bus,
-		Logger:       logger,
-		Locks:        concurrencyLocks,
+		Bus:                  bus,
+		Logger:               logger,
+		Locks:                concurrencyLocks,
+		DefaultImageProvider: defaultImageProvider,
 	}
 
 	idempotencyRepo := mysql.NewIdempotencyRepo(db)

@@ -17,7 +17,10 @@ func TestRunArtDirector(t *testing.T) {
 		agents.Copy{Headline: "Light the Way Forward"},
 		nil,
 		[]string{agents.ZoneLogo, agents.ZoneTagline, agents.ZoneFooter},
-		nil)
+		nil,
+		"",
+		"flux",
+	)
 	if err != nil {
 		t.Fatalf("RunArtDirector returned error: %v", err)
 	}

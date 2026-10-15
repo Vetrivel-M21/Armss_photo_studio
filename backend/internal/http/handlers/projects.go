@@ -61,7 +61,8 @@ func (h *ProjectsHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	logoUploadID := normalizeOptional(req.LogoUploadID)
 	footerText := normalizeOptional(req.FooterText)
-	project, err := h.Orchestrator.CreateProject(r.Context(), user.ID, req.Text, req.TemplateID, req.UploadIDs, logoUploadID, footerText)
+	hints := zoneHintsFromRequest(req)
+	project, err := h.Orchestrator.CreateProject(r.Context(), user.ID, req.Text, req.TemplateID, req.UploadIDs, logoUploadID, footerText, hints)
 	if !writeAgentError(w, r.Context(), err) {
 		return
 	}
@@ -171,6 +172,35 @@ func normalizeOptional(s *string) *string {
 	return s
 }
 
+// zoneHintsFromRequest extracts and normalises the placement hint fields,
+// applying safe defaults so old clients that omit them still work.
+func zoneHintsFromRequest(req dto.CreateProjectRequest) mysql.ZoneHints {
+	h := mysql.ZoneHints{
+		AspectRatio:    req.AspectRatio,
+		LogoPosition:   req.LogoPosition,
+		LogoScale:      req.LogoScale,
+		SloganPosition: req.SloganPosition,
+		SloganScale:    req.SloganScale,
+		FooterVisible:  req.FooterVisible == nil || *req.FooterVisible,
+	}
+	if h.AspectRatio == "" {
+		h.AspectRatio = "3:4"
+	}
+	if h.LogoPosition == "" {
+		h.LogoPosition = "top-center"
+	}
+	if h.LogoScale == "" {
+		h.LogoScale = "standard"
+	}
+	if h.SloganPosition == "" {
+		h.SloganPosition = "below-logo"
+	}
+	if h.SloganScale == "" {
+		h.SloganScale = "standard"
+	}
+	return h
+}
+
 func toProjectSummary(p mysql.Project) dto.ProjectSummary {
 	s := dto.ProjectSummary{
 		ID:        p.ID,
@@ -221,6 +251,12 @@ func buildProjectDetail(ctx context.Context, stageOutputs *mysql.StageOutputsRep
 		}
 		detail.LogoURL = &url
 	}
+	detail.AspectRatio = project.AspectRatio
+	detail.LogoPosition = project.LogoPosition
+	detail.LogoScale = project.LogoScale
+	detail.SloganPosition = project.SloganPosition
+	detail.SloganScale = project.SloganScale
+	detail.FooterVisible = project.FooterVisible
 
 	stages := []string{
 		mysql.StageStyle, mysql.StageBrief, mysql.StageConcepts,

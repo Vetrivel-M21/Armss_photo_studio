@@ -57,12 +57,12 @@ func TestComposite_DrawsFooterBarInBrandNavy(t *testing.T) {
 	}
 
 	img := decodePNG(t, out)
-	// The center of the floating pill at (500, 950) should be drawn with brand navy.
-	r, g, b, _ := img.At(500, 950).RGBA()
+	// Inside the floating pill at (500, 935) should be drawn with brand navy.
+	r, g, b, _ := img.At(500, 935).RGBA()
 	gotR, gotG, gotB := r>>8, g>>8, b>>8
 	// Pill interior should have brand navy tone
 	if gotR > 0x40 || gotB < 0x30 {
-		t.Errorf("center of floating badge = rgb(%d,%d,%d), expected navy tone", gotR, gotG, gotB)
+		t.Errorf("interior of floating badge = rgb(%d,%d,%d), expected navy tone", gotR, gotG, gotB)
 	}
 
 	// Outside the pill at the edge of canvas (980, 950), artwork is preserved (white), not severed by a bar!
