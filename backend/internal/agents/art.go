@@ -87,7 +87,33 @@ Instead, construct a structured "spec" and compile it into a cohesive, physicall
      * NO FLAT EMPTY STRIPS: Never tell the model to draw a blank, flat, or empty rectangular strip. The visual artwork must fill 100% of the canvas seamlessly.
      * INTEGRATED TYPOGRAPHY: Describe the headline as sculpted 3D metallic display type seamlessly integrated into the scene lighting (e.g. "Sculpted 3D polished gold 'DIWALI' lettering glowing warmly at the upper center").
    - "backgroundPrompt": Exactly the same cinematic scene, people, materials, lighting, and composition, but without any baked-in typography.
-   - "negativePrompt": Rigorous anti-clutter, anti-plastic, and anti-distortion constraints: "no debug text, no percentage labels, no zone markings, no layout guides, no flat beige bars, no empty header strips, no blank rectangles, no plain borders, no cartoonish rendering, no distorted anatomy, no malformed hands, no extra fingers, no dark murky lighting, no sterile empty tables".`
+   - "negativePrompt": Rigorous anti-clutter, anti-plastic, and anti-distortion constraints: "no debug text, no percentage labels, no zone markings, no layout guides, no flat beige bars, no empty header strips, no blank rectangles, no plain borders, no cartoonish rendering, no distorted anatomy, no malformed hands, no extra fingers, no dark murky lighting, no sterile empty tables".
+
+10. CRITICAL VISUAL INTENT & ANTI-DUPLICATION ARCHITECTURE:
+   - DISTINGUISH NATURAL OBJECTS VS. DECORATIVE REPRESENTATIONS:
+     * Natural elements (sun, moon, stars, sky, flames, flowers, water) must remain as realistic environmental scenery or motivated lighting unless the user explicitly requests an artificial sculpture, motif, or decorative prop.
+     * A natural sun in the sky must NEVER automatically produce a second decorative sun, sun motif, or sculpted sun behind the main subject.
+     * Natural sunlight and sunrise rays are optical lighting effects and atmospheric rays, NEVER physical halos, flower-shaped suns, or sculpted sun disks.
+     * A natural moon in the sky must NEVER produce an unintended decorative crescent sculpture or ornamental moon prop in the foreground.
+     * Real flowers must remain natural botanical arrangements, NEVER transformed into flower-shaped buildings or oversized ornamental architecture.
+     * Natural firelight and diya flames must illuminate the scene through warm light and soft shadows, NEVER creating floating disembodied flame sculptures.
+   - RESOLVING CONFLICTS & PRIORITIZING USER INTENT:
+     * Prioritize the user's explicit intent and realism over gratuitous artistic embellishments.
+     * Do NOT introduce additional physical objects, sculptures, or backdrops solely to make the scene appear "cinematic", "devotional", or "premium".
+     * Never duplicate a major subject (e.g. exactly ONE sun, ONE moon) unless multiple instances are explicitly requested.
+     * Do NOT mix realistic and symbolic interpretations of the same entity in the same scene. If a realistic natural sun is present, ban symbolic sun emblems. If an explicit sculpted emblem is requested, do not add an unrequested realistic duplicate.
+     * Treat atmosphere, volumetric rays, glow, and reflections strictly as optical lighting physics, not physical props.
+     * Preserve authentic cultural elements and regional realism without adding fantastical or mythological distortions unless requested.
+     * When clean or text-free images are requested, preserve that constraint strictly and suppress typography rendering.
+   - TWO-STAGE PRE-EMISSION VISUAL CONSISTENCY AUDIT:
+     * Before emitting the final tool call, review the draft prompt against the original user brief:
+       1. Check for duplicate or contradictory major objects (e.g., natural sun in sky vs. secondary sun motif behind subject).
+       2. Check for unrequested decorative sculptures, halos, or surreal architectural elements.
+       3. Check for conflicts between background scenery and foreground subjects.
+       4. Check for unrequested typography or text when a photographic/text-free scene was requested.
+       5. Check for omitted user elements from the creative brief.
+       6. Eliminate any duplicate elements, unrequested sculptures, or conflicting motifs from the final prompt.
+     * Emit ONLY the clean, validated, conflict-free final prompt. Do not output internal audit notes or validation chatter.`
 
 func artToolSchema() map[string]any {
 	strArr := map[string]any{"type": "array", "items": map[string]any{"type": "string"}}
@@ -288,6 +314,7 @@ func (c *Client) RunArtDirector(ctx context.Context, brief Brief, concept Concep
 	if err := json.Unmarshal(result.Raw, &out); err != nil {
 		return ArtDirection{}, Usage{}, fmt.Errorf("unmarshal art direction: %w", err)
 	}
+	out = AuditVisualConsistency(out, brief)
 	return out, Usage{TokensIn: result.TokensIn, TokensOut: result.TokensOut}, nil
 }
 

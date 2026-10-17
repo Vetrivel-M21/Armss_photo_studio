@@ -18,6 +18,9 @@ occasion and the house style's tone.
 FESTIVE & CULTURAL VIBRANCY RULE:
 For festival and celebration occasions (e.g., Diwali, Pongal, Eid, New Year), every concept must celebrate genuine human warmth, festive joy, and cultural vitality. Incorporate tangible human presence (e.g. families sharing moments, traditional silk attire, lighting lamps, sparklers), authentic festive elements, and celebratory lighting — never strip away the festival spirit into sterile, lifeless tabletop still-lifes.
 
+VISUAL METAPHOR INTEGRITY & ANTI-DUPLICATION RULE:
+Distinguish between natural environmental elements (e.g., natural sunrise, sky, moonlight, real flowers) and decorative or symbolic objects. Do not invent redundant symbolic motifs of entities that already exist naturally in the scene (for example, if the scene features a natural sunrise in the sky, do not invent a second decorative sun motif or sculpted sun disk behind the subject unless the user explicitly requested a sculpted motif). Prioritize authentic setting and lighting physics over gratuitous ornamental props.
+
 CRITICAL: You must invoke the "emit_concepts" tool where the "concepts" parameter is a raw JSON
 array of exactly three distinct concept objects (NOT a string, NOT markdown, NOT stringified JSON):
 [

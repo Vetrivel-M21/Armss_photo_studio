@@ -55,7 +55,7 @@ type Concept struct {
 func (c *Concept) UnmarshalJSON(data []byte) error {
 	type alias Concept
 	var a alias
-	if err := json.Unmarshal(data, &a); err == nil && (a.Name != "" || a.BigIdea != "" || a.VisualMetaphor != "") {
+	if err := json.Unmarshal(data, &a); err == nil && (a.Name != "" && a.BigIdea != "" && a.VisualMetaphor != "") {
 		*c = Concept(a)
 		return nil
 	}
