@@ -53,6 +53,11 @@ if [ ! -f ".env" ]; then
     echo ""
 else
     echo "[?] .env file found."
+    # Auto-migrate STORAGE_DRIVER to local if it was previously set to s3
+    if grep -q '^STORAGE_DRIVER=s3' .env; then
+        sed -i 's/^STORAGE_DRIVER=s3/STORAGE_DRIVER=local/' .env
+        echo "[i] Auto-migrated STORAGE_DRIVER=local in existing .env"
+    fi
 fi
 
 # -- 4. Read gateway port ------------------------------------------------------
