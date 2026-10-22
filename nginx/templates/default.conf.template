@@ -1,5 +1,5 @@
 # ----------------------------------------------------
-# ARMSS Photo Studio — Gateway Nginx Config (outer container)
+# ARMSS Photo Studio -- Gateway Nginx Config (outer container)
 # ${DOMAIN} is substituted at container start via docker-entrypoint envsubst
 # ----------------------------------------------------
 
@@ -36,7 +36,7 @@ server {
     gzip_types text/plain text/css text/xml application/json application/javascript application/xml+rss image/svg+xml;
 
     # ------------------------------------------------------------------
-    # 1. Liveness probe (/healthz) — fast, no dependency check
+    # 1. Liveness probe (/healthz) -- fast, no dependency check
     #    Docker compose waits for this to return 200 before starting nginx.
     # ------------------------------------------------------------------
     location = /healthz {
@@ -48,7 +48,7 @@ server {
     }
 
     # ------------------------------------------------------------------
-    # 2. Readiness probe (/readyz) — checks MySQL + object store
+    # 2. Readiness probe (/readyz) -- checks MySQL + object store
     #    Use this in load balancer health checks.
     # ------------------------------------------------------------------
     location = /readyz {
@@ -79,7 +79,7 @@ server {
     }
 
     # ------------------------------------------------------------------
-    # 4. SSE (Server-Sent Events) — AI pipeline progress streaming
+    # 4. SSE (Server-Sent Events) -- AI pipeline progress streaming
     #    Must NOT buffer; Connection must stay open for ~60s per call.
     # ------------------------------------------------------------------
     location /api/v1/projects {
@@ -97,7 +97,7 @@ server {
     }
 
     # ------------------------------------------------------------------
-    # 5. Static local file storage — only active when STORAGE_DRIVER=local
+    # 5. Static local file storage -- only active when STORAGE_DRIVER=local
     #    Generated poster images, renders, uploads served by backend.
     # ------------------------------------------------------------------
     location /files/ {
@@ -112,7 +112,7 @@ server {
     }
 
     # ------------------------------------------------------------------
-    # 6. MinIO S3 Console (admin only) — /minio-console/
+    # 6. MinIO S3 Console (admin only) -- /minio-console/
     # ------------------------------------------------------------------
     location /minio-console/ {
         proxy_pass http://minio:9001/;
@@ -126,7 +126,7 @@ server {
     }
 
     # ------------------------------------------------------------------
-    # 7. React SPA — catch-all, must be LAST
+    # 7. React SPA -- catch-all, must be LAST
     # ------------------------------------------------------------------
     location / {
         proxy_pass http://studio_frontend;

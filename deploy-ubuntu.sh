@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# ARMSS Photo Studio — Production Docker Deployment Script for Ubuntu Server
+# ARMSS Photo Studio -- Production Docker Deployment Script for Ubuntu Server
 # ==============================================================================
 set -euo pipefail
 
@@ -42,13 +42,13 @@ if [ ! -f ".env" ]; then
     echo "[?] .env generated with a secure random SESSION_SECRET."
     echo ""
     echo "  +--------------------------------------------------------------+"
-    echo "  ¦  IMPORTANT: Before going live, update these in .env:         ¦"
-    echo "  ¦   • MYSQL_PASSWORD      — strong DB password                 ¦"
-    echo "  ¦   • MINIO_ROOT_PASSWORD — strong MinIO password              ¦"
-    echo "  ¦   • DOMAIN              — your actual domain name            ¦"
-    echo "  ¦   • PUBLIC_BASE_URL     — full public URL                    ¦"
-    echo "  ¦   • ANTHROPIC_API_KEY or GEMINI_API_KEY (for AI features)    ¦"
-    echo "  ¦   • FLUX_API_KEY        (for image generation)               ¦"
+    echo "  Â¦  IMPORTANT: Before going live, update these in .env:         Â¦"
+    echo "  Â¦   * MYSQL_PASSWORD      -- strong DB password                 Â¦"
+    echo "  Â¦   * MINIO_ROOT_PASSWORD -- strong MinIO password              Â¦"
+    echo "  Â¦   * DOMAIN              -- your actual domain name            Â¦"
+    echo "  Â¦   * PUBLIC_BASE_URL     -- full public URL                    Â¦"
+    echo "  Â¦   * ANTHROPIC_API_KEY or GEMINI_API_KEY (for AI features)    Â¦"
+    echo "  Â¦   * FLUX_API_KEY        (for image generation)               Â¦"
     echo "  +--------------------------------------------------------------+"
     echo ""
 else
@@ -165,7 +165,7 @@ fi
 echo "[i] Smoke-testing backend /readyz (DB + storage)..."
 READYZ_RESPONSE=$(docker compose exec -T backend wget -qO- "http://127.0.0.1:8080/readyz" 2>/dev/null || echo "")
 if echo "$READYZ_RESPONSE" | grep -qi '"status"'; then
-    echo "[?] Backend /readyz: OK — MySQL and object store reachable."
+    echo "[?] Backend /readyz: OK -- MySQL and object store reachable."
 else
     echo "[?] Backend /readyz check failed. Response: ${READYZ_RESPONSE}"
     echo "    Check: docker compose logs backend"
@@ -198,8 +198,8 @@ echo "  ? Readiness probe:   http://${SERVER_IP}:${GATEWAY_PORT}/readyz"
 echo "  ? MinIO S3 console:  http://${SERVER_IP}:${GATEWAY_PORT}/minio-console/"
 echo ""
 echo "  ? Health endpoints explained:"
-echo "    /healthz  — liveness:  process is up (no DB/storage check)"
-echo "    /readyz   — readiness: MySQL AND object store are reachable"
+echo "    /healthz  -- liveness:  process is up (no DB/storage check)"
+echo "    /readyz   -- readiness: MySQL AND object store are reachable"
 echo ""
 echo "  ? Daily maintenance commands:"
 echo "    docker compose logs -f               # stream all logs"

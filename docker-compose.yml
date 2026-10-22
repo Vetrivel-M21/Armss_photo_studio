@@ -28,7 +28,7 @@ services:
 
   # ----------------------------------------------------
   # MySQL Database Service (MySQL 8.4)
-  # Internal only — no host port binding.
+  # Internal only -- no host port binding.
   # ----------------------------------------------------
   mysql:
     image: mysql:8.4
@@ -52,7 +52,7 @@ services:
 
   # ----------------------------------------------------
   # MinIO Object Storage (S3-compatible)
-  # Healthcheck uses MinIO's built-in /minio/health/live endpoint — no mc
+  # Healthcheck uses MinIO's built-in /minio/health/live endpoint -- no mc
   # alias needed, no external tool dependency.
   # ----------------------------------------------------
   minio:
@@ -68,7 +68,7 @@ services:
     networks:
       - armss_studio_network
     healthcheck:
-      # MinIO exposes /minio/health/live (unauthenticated) — curl is pre-installed in the minio image
+      # MinIO exposes /minio/health/live (unauthenticated) -- curl is pre-installed in the minio image
       test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/minio/health/live"]
       interval: 10s
       timeout: 5s
@@ -76,7 +76,7 @@ services:
       start_period: 15s
 
   # ----------------------------------------------------
-  # MinIO Init — creates the storage bucket on first run
+  # MinIO Init -- creates the storage bucket on first run
   # Runs once and exits. Uses mc (minio-go client) properly.
   # ----------------------------------------------------
   minio-init:
@@ -101,8 +101,8 @@ services:
       - armss_studio_network
 
   # ----------------------------------------------------
-  # ARMSS Photo Studio Backend Service (Go API — port 8080)
-  # Healthcheck: /healthz (liveness — fast, no DB/S3 check)
+  # ARMSS Photo Studio Backend Service (Go API -- port 8080)
+  # Healthcheck: /healthz (liveness -- fast, no DB/S3 check)
   # Readiness:   /readyz  (checks MySQL + object store)
   # ----------------------------------------------------
   backend:
@@ -114,13 +114,13 @@ services:
     environment:
       - PORT=8080
       - ENV=production
-      # MySQL DSN — 'mysql' resolves to the mysql container via Docker DNS
+      # MySQL DSN -- 'mysql' resolves to the mysql container via Docker DNS
       - MYSQL_DSN=root:${MYSQL_PASSWORD:-StudioDB@2026}@tcp(mysql:3306)/armss_poster_studio?parseTime=true&loc=UTC&multiStatements=true
       # Object storage: "s3" (MinIO) or "local" (plain disk, no MinIO needed)
       - STORAGE_DRIVER=${STORAGE_DRIVER:-s3}
       - LOCAL_STORAGE_DIR=/app/data/storage
       - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-http://localhost:8070}
-      # MinIO / S3 — 'minio' resolves to the minio container via Docker DNS
+      # MinIO / S3 -- 'minio' resolves to the minio container via Docker DNS
       - S3_ENDPOINT=http://minio:9000
       - S3_ACCESS_KEY=${MINIO_ROOT_USER:-studioadmin}
       - S3_SECRET_KEY=${MINIO_ROOT_PASSWORD:-StudioMinio@2026}
@@ -167,7 +167,7 @@ services:
       minio-init:
         condition: service_completed_successfully
     healthcheck:
-      # wget is installed in the Dockerfile — /healthz is a fast liveness probe
+      # wget is installed in the Dockerfile -- /healthz is a fast liveness probe
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
       interval: 10s
       timeout: 5s

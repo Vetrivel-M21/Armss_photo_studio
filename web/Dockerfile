@@ -1,5 +1,5 @@
 # ----------------------------------------------------
-# ARMSS Photo Studio — React/Vite Frontend Dockerfile
+# ARMSS Photo Studio -- React/Vite Frontend Dockerfile
 # Two-stage build: Node build -> nginx static serve
 # ----------------------------------------------------
 FROM node:20-alpine AS builder

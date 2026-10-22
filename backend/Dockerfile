@@ -1,5 +1,5 @@
 # ----------------------------------------------------
-# ARMSS Photo Studio — Go Backend Dockerfile
+# ARMSS Photo Studio -- Go Backend Dockerfile
 # Multi-stage build: static binary for 100% reliability
 # ----------------------------------------------------
 FROM golang:1.24-bookworm AS builder
@@ -49,8 +49,8 @@ ENV PORT=8080 \
 
 EXPOSE 8080
 
-# Health check — /healthz is a fast liveness probe (no DB/S3 deps)
-# /readyz is the deeper dependency check — used by the readiness gate
+# Health check -- /healthz is a fast liveness probe (no DB/S3 deps)
+# /readyz is the deeper dependency check -- used by the readiness gate
 HEALTHCHECK --interval=10s --timeout=5s --start-period=25s --retries=12 \
     CMD wget -qO- http://127.0.0.1:${PORT:-8080}/healthz > /dev/null || exit 1
 
