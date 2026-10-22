@@ -2,7 +2,7 @@
 # ARMSS Photo Studio -- Go Backend Dockerfile
 # Multi-stage build: static binary for 100% reliability
 # ----------------------------------------------------
-FROM golang:1.24-bookworm AS builder
+FROM golang:1.26-bookworm AS builder
 
 WORKDIR /app
 
