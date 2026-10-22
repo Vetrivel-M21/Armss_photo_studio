@@ -99,25 +99,7 @@ done
 echo ""
 echo "[?] MySQL healthy after ${ELAPSED}s."
 
-# -- 8. Wait for MinIO to be healthy ------------------------------------------
-echo "[i] Waiting for MinIO to become healthy..."
-ELAPSED=0
-
-until docker compose ps minio 2>/dev/null | grep -q "healthy"; do
-    if [ "$ELAPSED" -ge 60 ]; then
-        echo ""
-        echo "[?] MinIO did not become healthy within 60s."
-        docker compose logs --tail=30 minio
-        exit 1
-    fi
-    printf "."
-    sleep "$INTERVAL"
-    ELAPSED=$((ELAPSED + INTERVAL))
-done
-echo ""
-echo "[?] MinIO healthy after ${ELAPSED}s."
-
-# -- 9. Wait for backend healthcheck to pass -----------------------------------
+# -- 8. Wait for backend healthcheck to pass -----------------------------------
 echo "[i] Waiting for backend to become healthy..."
 MAX_WAIT=120
 ELAPSED=0
