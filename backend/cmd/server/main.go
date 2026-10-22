@@ -81,6 +81,19 @@ func main() {
 	sessionsRepo := mysql.NewSessionsRepo(db)
 	authManager := auth.NewManager(usersRepo, sessionsRepo, cfg.SessionCookie, cfg.SessionTTL, cfg.Env == "production")
 
+	// Auto-seed initial admin account on first boot if configured
+	seedEmail := os.Getenv("SEED_ADMIN_EMAIL")
+	seedPassword := os.Getenv("SEED_ADMIN_PASSWORD")
+	if seedEmail != "" && seedPassword != "" {
+		if _, err := usersRepo.GetByEmail(context.Background(), seedEmail); errors.Is(err, mysql.ErrNotFound) {
+			if hash, err := auth.HashPassword(seedPassword); err == nil {
+				if _, err := usersRepo.Create(context.Background(), seedEmail, hash, mysql.RoleAdmin); err == nil {
+					logger.Info("admin_user_seeded", "email", seedEmail)
+				}
+			}
+		}
+	}
+
 	projectsRepo := mysql.NewProjectsRepo(db)
 	projectRefsRepo := mysql.NewProjectReferencesRepo(db)
 	stageOutputsRepo := mysql.NewStageOutputsRepo(db)

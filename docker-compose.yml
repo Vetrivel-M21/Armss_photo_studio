@@ -67,9 +67,11 @@ services:
       - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
       - LOCAL_STORAGE_DIR=/app/data/storage
       - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-http://localhost:8070}
-      # Session
+      # Session & Admin Seed
       - SESSION_SECRET=${SESSION_SECRET:-change-me-to-a-long-random-string-2026}
       - SESSION_TTL_HOURS=168
+      - SEED_ADMIN_EMAIL=${SEED_ADMIN_EMAIL:-admin@armss.com}
+      - SEED_ADMIN_PASSWORD=${SEED_ADMIN_PASSWORD:-Admin@123}
       # AI Agent provider
       - AGENT_PROVIDER=${AGENT_PROVIDER:-anthropic}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
