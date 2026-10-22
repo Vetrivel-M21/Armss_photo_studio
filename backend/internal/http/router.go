@@ -9,6 +9,7 @@ import (
 	authpkg "armss-poster-studio/internal/auth"
 	"armss-poster-studio/internal/http/handlers"
 	"armss-poster-studio/internal/http/middleware"
+	videoapi "armss-poster-studio/internal/video/api"
 )
 
 // Deps carries every handler the router wires up. Fields are added as each
@@ -30,6 +31,7 @@ type Deps struct {
 	Composite       *handlers.CompositeHandler
 	AgentSettings   *handlers.AgentSettingsHandler
 	Usage           *handlers.UsageHandler
+	Video           *videoapi.Handler
 	// Files is only set when running against the local-disk storage backend
 	// (no Docker/MinIO available) — it serves objects back over plain HTTP.
 	Files *handlers.FilesHandler
@@ -47,6 +49,7 @@ func NewRouter(d Deps) *chi.Mux {
 	r.Get("/readyz", d.Health.Readyz)
 	if d.Files != nil {
 		r.Get("/files/*", d.Files.Serve)
+		r.Head("/files/*", d.Files.Serve)
 	}
 
 	r.Route("/api/v1", func(r chi.Router) {
@@ -80,6 +83,10 @@ func NewRouter(d Deps) *chi.Mux {
 
 			r.Post("/projects/{id}/render", d.Render.Render)
 			r.Post("/projects/{id}/composite", d.Composite.Composite)
+
+			if d.Video != nil {
+				videoapi.RegisterRoutes(r, d.Video)
+			}
 
 			r.Group(func(r chi.Router) {
 				r.Use(middleware.RequireAdmin)

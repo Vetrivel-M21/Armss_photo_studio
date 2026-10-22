@@ -10,6 +10,7 @@ import { AdminAgentSettingsPage } from "./pages/AdminAgentSettingsPage";
 import { AdminUsagePage } from "./pages/AdminUsagePage";
 import { AppShell } from "./components/common/AppShell";
 import { Spinner } from "./components/common/Spinner";
+import { VideoEditorPage } from "./modules/video/pages/VideoEditorPage";
 
 // Layout route: renders AppShell (Sidebar + animated Outlet, via
 // RouteTransition) once per auth state, instead of once per matched route —
@@ -43,6 +44,8 @@ export default function App() {
         <Route index element={<StartPage />} />
         <Route path="projects" element={<ProjectsPage />} />
         <Route path="projects/:id" element={<PipelinePage />} />
+        <Route path="video-editor" element={<VideoEditorPage />} />
+        <Route path="video-editor/:id" element={<VideoEditorPage />} />
       </Route>
 
       <Route element={<RequireAuth adminOnly />}>

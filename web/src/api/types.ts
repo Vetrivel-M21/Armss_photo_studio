@@ -206,6 +206,7 @@ export interface BrandAsset {
 
 export interface UploadResponse {
   id: string;
+  objectKey?: string;
   contentType: string;
   sizeBytes: number;
 }

@@ -29,6 +29,9 @@ import (
 	"armss-poster-studio/internal/ratelimit"
 	"armss-poster-studio/internal/storage"
 	"armss-poster-studio/internal/store/mysql"
+	videoapi "armss-poster-studio/internal/video/api"
+	videostore "armss-poster-studio/internal/video/store"
+	videoworker "armss-poster-studio/internal/video/worker"
 )
 
 func main() {
@@ -186,6 +189,10 @@ func main() {
 		filesHandler = handlers.NewFilesHandler(cfg.LocalStorageDir)
 	}
 
+	videoStore := videostore.New(db)
+	videoRunner := videoworker.NewRunner(videoStore, objectStore, "web/public/fonts", os.Getenv("FFMPEG_PATH"), logger)
+	videoHandler := videoapi.NewHandler(videoStore, objectStore, videoRunner)
+
 	router := apihttp.NewRouter(apihttp.Deps{
 		Logger:          logger,
 		AuthManager:     authManager,
@@ -221,6 +228,7 @@ func main() {
 			IdeogramCostCents: cfg.IdeogramCostCents,
 		}),
 		Files: filesHandler,
+		Video: videoHandler,
 	})
 
 	srv := apihttp.NewServer(cfg.Port, router)

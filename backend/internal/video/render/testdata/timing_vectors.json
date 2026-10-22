@@ -1,0 +1,235 @@
+{
+  "_comment": "Golden timing vectors consumed by BOTH Go tests (timing_test.go) and TypeScript tests (timing.test.ts). Never edit one without running both test suites. All duration values are in seconds, rounded to 3 decimal places.",
+
+  "total_duration": [
+    {
+      "id": "single_clip_no_transition",
+      "description": "One 5s clip, no transition → total = 5s",
+      "clips": [
+        { "duration": 5.0, "transition_out": null }
+      ],
+      "expected": 5.0
+    },
+    {
+      "id": "two_clips_no_transition",
+      "description": "Two clips, no transitions → total = 3 + 4 = 7s",
+      "clips": [
+        { "duration": 3.0, "transition_out": null },
+        { "duration": 4.0, "transition_out": null }
+      ],
+      "expected": 7.0
+    },
+    {
+      "id": "two_clips_one_transition",
+      "description": "3s + 4s with 0.5s transition → 3 + 4 − 0.5 = 6.5s",
+      "clips": [
+        { "duration": 3.0, "transition_out": { "type": "fade", "duration": 0.5 } },
+        { "duration": 4.0, "transition_out": null }
+      ],
+      "expected": 6.5
+    },
+    {
+      "id": "three_clips_two_transitions",
+      "description": "3s + 4s + 5s, transitions 0.5s and 1.0s → 12 − 1.5 = 10.5s",
+      "clips": [
+        { "duration": 3.0, "transition_out": { "type": "fade",      "duration": 0.5 } },
+        { "duration": 4.0, "transition_out": { "type": "slide-left","duration": 1.0 } },
+        { "duration": 5.0, "transition_out": null }
+      ],
+      "expected": 10.5
+    },
+    {
+      "id": "max_clips_uniform",
+      "description": "30 clips × 3s each, no transitions → 90s exactly",
+      "clips_repeat": { "count": 30, "duration": 3.0, "transition_out": null },
+      "expected": 90.0
+    },
+    {
+      "id": "boundary_all_transitions",
+      "description": "3 clips × 2s each, transitions at max (0.5×min=0.5×2=1s each). Total = 6 − 2 = 4s",
+      "clips": [
+        { "duration": 2.0, "transition_out": { "type": "fade", "duration": 1.0 } },
+        { "duration": 2.0, "transition_out": { "type": "fade", "duration": 1.0 } },
+        { "duration": 2.0, "transition_out": null }
+      ],
+      "expected": 4.0
+    }
+  ],
+
+  "clip_start_times": [
+    {
+      "id": "three_clips_start_times",
+      "description": "Clips 3s, 4s, 5s with transitions 0.5s, 1.0s",
+      "clips": [
+        { "duration": 3.0, "transition_out": { "type": "fade",      "duration": 0.5 } },
+        { "duration": 4.0, "transition_out": { "type": "slide-left","duration": 1.0 } },
+        { "duration": 5.0, "transition_out": null }
+      ],
+      "expected_starts": [0.0, 2.5, 5.5]
+    },
+    {
+      "id": "no_transitions_start_times",
+      "description": "Three clips 2s, 3s, 4s, no transitions",
+      "clips": [
+        { "duration": 2.0, "transition_out": null },
+        { "duration": 3.0, "transition_out": null },
+        { "duration": 4.0, "transition_out": null }
+      ],
+      "expected_starts": [0.0, 2.0, 5.0]
+    }
+  ],
+
+  "xfade_offsets": [
+    {
+      "id": "first_transition_offset",
+      "description": "Clips 3s, 4s, 5s, transitions 0.5s and 1.0s. xfade[0] offset = 3−0.5 = 2.5, xfade[1] = 2.5+4−1.0 = 5.5",
+      "clips": [
+        { "duration": 3.0, "transition_out": { "type": "fade",       "duration": 0.5 } },
+        { "duration": 4.0, "transition_out": { "type": "slide-left", "duration": 1.0 } },
+        { "duration": 5.0, "transition_out": null }
+      ],
+      "expected_offsets": [2.5, 5.5]
+    }
+  ],
+
+  "transition_max_allowed": [
+    {
+      "id": "equal_clips",
+      "description": "Clips 4s and 4s → max = 0.5×4 = 2.0s",
+      "clips": [
+        { "duration": 4.0, "transition_out": null },
+        { "duration": 4.0, "transition_out": null }
+      ],
+      "between_index": 0,
+      "expected_max": 2.0
+    },
+    {
+      "id": "shorter_next_clip",
+      "description": "Clips 5s and 2s → max = 0.5×2 = 1.0s",
+      "clips": [
+        { "duration": 5.0, "transition_out": null },
+        { "duration": 2.0, "transition_out": null }
+      ],
+      "between_index": 0,
+      "expected_max": 1.0
+    },
+    {
+      "id": "minimum_clip_duration",
+      "description": "Clips 1s and 1s (minimum allowed) → max = 0.5×1 = 0.5s",
+      "clips": [
+        { "duration": 1.0, "transition_out": null },
+        { "duration": 1.0, "transition_out": null }
+      ],
+      "between_index": 0,
+      "expected_max": 0.5
+    }
+  ],
+
+  "ken_burns_easing": [
+    {
+      "id": "linear_midpoint",
+      "description": "Linear easing at u=0.5 → value at exactly midpoint",
+      "easing": "linear",
+      "from": 1.0, "to": 2.0, "u": 0.5,
+      "expected": 1.5
+    },
+    {
+      "id": "linear_start",
+      "easing": "linear",
+      "from": 1.0, "to": 2.0, "u": 0.0,
+      "expected": 1.0
+    },
+    {
+      "id": "linear_end",
+      "easing": "linear",
+      "from": 1.0, "to": 2.0, "u": 1.0,
+      "expected": 2.0
+    },
+    {
+      "id": "ease_in_out_midpoint",
+      "description": "Cubic ease-in-out: 3u²−2u³ at u=0.5 → 3(0.25)−2(0.125) = 0.75−0.25 = 0.5",
+      "easing": "ease-in-out",
+      "from": 0.0, "to": 1.0, "u": 0.5,
+      "expected": 0.5
+    },
+    {
+      "id": "ease_in_out_quarter",
+      "description": "At u=0.25: 3(0.0625)−2(0.015625) = 0.1875−0.03125 = 0.15625",
+      "easing": "ease-in-out",
+      "from": 0.0, "to": 1.0, "u": 0.25,
+      "expected": 0.15625
+    },
+    {
+      "id": "ease_in_out_three_quarter",
+      "description": "At u=0.75: 3(0.5625)−2(0.421875) = 1.6875−0.84375 = 0.84375",
+      "easing": "ease-in-out",
+      "from": 0.0, "to": 1.0, "u": 0.75,
+      "expected": 0.84375
+    },
+    {
+      "id": "clamp_below_zero",
+      "description": "u < 0 is clamped to 0",
+      "easing": "linear",
+      "from": 5.0, "to": 10.0, "u": -0.5,
+      "expected": 5.0
+    },
+    {
+      "id": "clamp_above_one",
+      "description": "u > 1 is clamped to 1",
+      "easing": "linear",
+      "from": 5.0, "to": 10.0, "u": 1.5,
+      "expected": 10.0
+    }
+  ],
+
+  "text_alpha": [
+    {
+      "id": "before_start",
+      "description": "t before text start → alpha = 0",
+      "clip_start": 0.0,
+      "text": { "start": 0.5, "end": 2.0, "anim": "fade-in", "anim_duration": 0.3 },
+      "t": 0.3,
+      "expected_alpha": 0.0
+    },
+    {
+      "id": "at_start",
+      "description": "t exactly at text start → alpha = 0 (beginning of fade)",
+      "clip_start": 0.0,
+      "text": { "start": 0.5, "end": 2.0, "anim": "fade-in", "anim_duration": 0.3 },
+      "t": 0.5,
+      "expected_alpha": 0.0
+    },
+    {
+      "id": "mid_animation",
+      "description": "t at 0.5 through anim_duration → alpha = 0.5",
+      "clip_start": 0.0,
+      "text": { "start": 0.5, "end": 2.0, "anim": "fade-in", "anim_duration": 0.4 },
+      "t": 0.7,
+      "expected_alpha": 0.5
+    },
+    {
+      "id": "after_animation",
+      "description": "t after animation completes → alpha = 1",
+      "clip_start": 0.0,
+      "text": { "start": 0.5, "end": 2.0, "anim": "fade-in", "anim_duration": 0.3 },
+      "t": 1.0,
+      "expected_alpha": 1.0
+    },
+    {
+      "id": "after_end",
+      "description": "t at or after text end → alpha = 0",
+      "clip_start": 0.0,
+      "text": { "start": 0.5, "end": 2.0, "anim": "fade-in", "anim_duration": 0.3 },
+      "t": 2.0,
+      "expected_alpha": 0.0
+    },
+    {
+      "id": "clip_offset",
+      "description": "Clip starts at t=5, text start=0.5 → absolute start=5.5",
+      "clip_start": 5.0,
+      "text": { "start": 0.5, "end": 2.0, "anim": "fade-in", "anim_duration": 0.3 },
+      "t": 5.4,
+      "expected_alpha": 0.0
+    }
+  ]
+}

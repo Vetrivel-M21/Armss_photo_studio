@@ -85,9 +85,13 @@ func (b *localBackend) SignedURL(ctx context.Context, objectKey string, expiry t
 // would escape it (object keys are generated internally with uuid segments,
 // but this guards against a future caller passing something untrusted).
 func (b *localBackend) resolve(objectKey string) (string, error) {
-	cleaned := filepath.Clean("/" + objectKey)
-	path := filepath.Join(b.rootDir, cleaned)
-	if !strings.HasPrefix(path, filepath.Clean(b.rootDir)+string(filepath.Separator)) {
+	cleanKey := filepath.Clean(strings.TrimLeft(objectKey, "/\\"))
+	absRoot, err := filepath.Abs(b.rootDir)
+	if err != nil {
+		return "", err
+	}
+	path := filepath.Join(absRoot, cleanKey)
+	if !strings.HasPrefix(path, absRoot+string(filepath.Separator)) && path != absRoot {
 		return "", errors.New("invalid object key")
 	}
 	return path, nil

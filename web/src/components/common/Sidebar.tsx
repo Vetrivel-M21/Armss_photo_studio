@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Activity, FolderKanban, Image, LayoutTemplate, LogOut, Menu, Settings, Sparkles } from "lucide-react";
+import { Activity, Film, FolderKanban, Image, LayoutTemplate, LogOut, Menu, Settings, Sparkles } from "lucide-react";
 import type { User } from "../../api/types";
 import { useLogout } from "../../hooks/useAuth";
 import { Modal } from "./Modal";
@@ -66,6 +66,12 @@ function NavItems({ user, onNavigate }: { user: User; onNavigate?: () => void })
         <NavItemContent>
           <FolderKanban className="h-4 w-4 text-sky-400 group-hover:text-white transition-colors" aria-hidden="true" />
           My Posters
+        </NavItemContent>
+      </NavLink>
+      <NavLink to="/video-editor" className={navItemClass} onClick={onNavigate}>
+        <NavItemContent>
+          <Film className="h-4 w-4 text-purple-400 group-hover:text-white transition-colors" aria-hidden="true" />
+          Reels / Video
         </NavItemContent>
       </NavLink>
 

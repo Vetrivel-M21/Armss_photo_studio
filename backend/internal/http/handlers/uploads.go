@@ -78,6 +78,7 @@ func (h *UploadsHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	respond.JSON(w, http.StatusCreated, dto.UploadResponse{
 		ID:          upload.ID,
+		ObjectKey:   upload.ObjectKey,
 		ContentType: upload.ContentType,
 		SizeBytes:   upload.SizeBytes,
 	})

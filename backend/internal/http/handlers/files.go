@@ -23,9 +23,14 @@ func NewFilesHandler(rootDir string) *FilesHandler {
 
 func (h *FilesHandler) Serve(w http.ResponseWriter, r *http.Request) {
 	key := chi.URLParam(r, "*")
-	cleaned := filepath.Clean("/" + key)
-	path := filepath.Join(h.RootDir, cleaned)
-	if !strings.HasPrefix(path, filepath.Clean(h.RootDir)+string(filepath.Separator)) {
+	cleanKey := filepath.Clean(strings.TrimLeft(key, "/\\"))
+	absRoot, err := filepath.Abs(h.RootDir)
+	if err != nil {
+		respond.Error(w, http.StatusInternalServerError, "Storage error.")
+		return
+	}
+	path := filepath.Join(absRoot, cleanKey)
+	if !strings.HasPrefix(path, absRoot+string(filepath.Separator)) && path != absRoot {
 		respond.Error(w, http.StatusBadRequest, "Invalid file path.")
 		return
 	}
